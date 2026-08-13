@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  game:
+    build: .
+    image: bullet-heaven:latest
+    container_name: bullet-heaven-game
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - PULSE_SERVER=${PULSE_SERVER:-unix:/tmp/pulseaudio.socket}
+      - SDL_AUDIODRIVER=pulseaudio
+      - SDL_VIDEODRIVER=x11
+    volumes:
+      # Compartilha o socket X11 para exibição gráfica
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Mapeamento do diretório de saves para persistência de progresso e configurações
+      - ./saves:/app/saves:rw
+      # Mapeamento do código fonte para hot-reload e desenvolvimento
+      - ./src:/app/src:rw
+    network_mode: host

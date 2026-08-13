@@ -1,0 +1,17 @@
+{
+    "total_gold": 2348,
+    "high_score": 12275,
+    "games_played": 13,
+    "total_kills": 1034,
+    "time_survived_record_sec": 172.0519999999839,
+    "unlocked_heroes": [
+        "cubo_azul"
+    ],
+    "upgrades": {
+        "max_hp": 0,
+        "damage": 0,
+        "speed": 0,
+        "pickup_range": 0,
+        "attack_speed": 0
+    }
+}
