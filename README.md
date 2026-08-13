@@ -55,8 +55,8 @@ Protótipo de jogo estilo **Bullet Heaven / Roguelite de Sobrevivência** desenv
 
 1. Clone o repositório e acesse a pasta:
    ```bash
-   git clone https://github.com/SEU_USUARIO/bullet-heaven.git
-   cd bullet-heaven
+   git clone https://github.com/pfFabio/cat-bullet-heaven.git
+   cd cat-bullet-heaven
    ```
 
 2. Crie e ative um ambiente virtual (opcional, porém recomendado):
