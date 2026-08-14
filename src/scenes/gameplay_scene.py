@@ -9,6 +9,7 @@ import pygame
 from typing import List, Tuple, Dict, Any, TYPE_CHECKING
 from src.scenes.base_scene import BaseScene
 from src.ui.components import Button, Panel, UpgradeCard
+from src.core.skin_catalog import get_skin, POWER_DEFINITIONS
 from src.core.constants import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -89,6 +90,46 @@ class Projectile:
     def draw(self, surface: pygame.Surface, asset_mgr) -> None:
         rect = pygame.Rect(int(self.x - self.radius), int(self.y - self.radius), self.radius * 2, self.radius * 2)
         asset_mgr.draw_styled_cube(surface, rect, COLOR_PROJECTILE, glow=True)
+
+
+class MegaBeamProjectile:
+    """Projétil gigante que viaja em linha reta e perfura todos os inimigos até sair da tela."""
+
+    def __init__(self, x: float, y: float, dir_x: float, dir_y: float, damage: int = 65, speed: float = 680.0):
+        self.x = x
+        self.y = y
+        self.damage = damage
+        self.speed = speed
+        self.radius = 18
+        dist = max(0.001, math.hypot(dir_x, dir_y))
+        self.vx = (dir_x / dist) * speed
+        self.vy = (dir_y / dist) * speed
+        self.lifetime = 2.5
+        self.age = 0.0
+        self.hit_enemies = set()
+
+    def update(self, dt: float) -> bool:
+        self.age += dt
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+
+        margin = 80
+        if self.x < -margin or self.x > SCREEN_WIDTH + margin or self.y < -margin or self.y > SCREEN_HEIGHT + margin:
+            return False
+
+        return self.age < self.lifetime
+
+    def draw(self, surface: pygame.Surface, asset_mgr) -> None:
+        # Brilho externo neon circular
+        glow_surf = pygame.Surface((self.radius * 4, self.radius * 4), pygame.SRCALPHA)
+        pygame.draw.circle(glow_surf, (0, 235, 235, 70), (self.radius * 2, self.radius * 2), self.radius * 2)
+        pygame.draw.circle(glow_surf, (255, 255, 255, 120), (self.radius * 2, self.radius * 2), int(self.radius * 1.3))
+        surface.blit(glow_surf, (int(self.x - self.radius * 2), int(self.y - self.radius * 2)))
+
+        # Núcleo do tiro de energia
+        pygame.draw.circle(surface, (255, 255, 255), (int(self.x), int(self.y)), self.radius)
+        pygame.draw.circle(surface, COLOR_CYAN, (int(self.x), int(self.y)), self.radius, width=3)
+
 
 
 class Enemy:
@@ -219,8 +260,11 @@ class GameplayScene(BaseScene):
         self.player_xp_to_next = 50
         self.pickup_radius = 120.0
 
-        # Animação e Sprite do Protagonista (Gatinho Azul)
-        self.cat_name = "blue_0"
+        # Animação e Sprite do Protagonista (Gatinho Selecionado)
+        self.cat_name = self.engine.save_manager.get_selected_skin()
+        self.cat_skin_info = get_skin(self.cat_name)
+        self.cat_power = self.cat_skin_info.power_id
+        self.ability_cooldown_timer = 0.0
         self.player_facing_dir = "down"
         self.player_action = "sit"
         self.player_anim_time = 0.0
@@ -228,12 +272,26 @@ class GameplayScene(BaseScene):
         self.player_is_moving = False
         self.player_sprite_scale = (44, 44)
 
+        # Mapeamento de direções para vetores de mira/movimento
+        self.DIR_VECTORS = {
+            "down": (0.0, 1.0),
+            "down_left": (-0.7071, 0.7071),
+            "left": (-1.0, 0.0),
+            "up_left": (-0.7071, -0.7071),
+            "up": (0.0, -1.0),
+            "up_right": (0.7071, -0.7071),
+            "right": (1.0, 0.0),
+            "down_right": (0.7071, 0.7071),
+        }
+
         # Contadores de Melhorias
+        self.hp_regen_accumulator = 0.0
         self.upgrade_counts = {
             "hp": 0,
             "damage": 0,
             "attack_speed": 0,
-            "move_speed": 0
+            "move_speed": 0,
+            "hp_regen": 0
         }
 
         # Estatísticas da Partida
@@ -244,6 +302,7 @@ class GameplayScene(BaseScene):
 
         # Entidades
         self.projectiles: List[Projectile] = []
+        self.mega_beams: List[MegaBeamProjectile] = []
         self.enemies: List[Enemy] = []
         self.drops: List[DropItem] = []
         self.damage_numbers: List[DamageNumber] = []
@@ -327,6 +386,13 @@ class GameplayScene(BaseScene):
             self.is_paused = not self.is_paused
 
     def _quit_to_menu(self) -> None:
+        if not self.game_over and self.gold_earned > 0:
+            self.engine.save_manager.record_run_stats(
+                score=self.score,
+                kills=self.kills,
+                time_survived=self.time_survived,
+                gold_earned=self.gold_earned
+            )
         self.engine.change_scene("main_menu")
 
     def _trigger_game_over(self) -> None:
@@ -376,6 +442,14 @@ class GameplayScene(BaseScene):
                 "color": COLOR_CYAN,
                 "accent": COLOR_CYAN,
                 "apply": self._apply_move_speed_upgrade
+            },
+            "hp_regen": {
+                "title": "Recuperação de HP",
+                "desc": "+1% HP Máx / seg\nRegeneração contínua de vida",
+                "preview": f"Regen Atual: {self.upgrade_counts.get('hp_regen', 0)}%/s",
+                "color": (34, 197, 94),
+                "accent": (34, 197, 94),
+                "apply": self._apply_hp_regen_upgrade
             }
         }
 
@@ -404,13 +478,18 @@ class GameplayScene(BaseScene):
         self.upgrade_counts["move_speed"] += 1
         self.damage_numbers.append(DamageNumber(self.player_x, self.player_y - 30, "+VELOCIDADE!", COLOR_CYAN))
 
+    def _apply_hp_regen_upgrade(self) -> None:
+        """Aplica melhoria de recuperação/regeneração contínua de HP."""
+        self.upgrade_counts["hp_regen"] = self.upgrade_counts.get("hp_regen", 0) + 1
+        self.damage_numbers.append(DamageNumber(self.player_x, self.player_y - 30, "+1% REGEN/SEG!", COLOR_GREEN))
+
     def _trigger_level_up(self) -> None:
-        """Inicia a tela de seleção de Level Up sorteando 3 das 4 opções."""
+        """Inicia a tela de seleção de Level Up sorteando 3 das opções disponíveis."""
         self.is_leveling_up = True
         self.engine.audio_manager.play_sfx("levelup")
 
         all_upgrades = self._get_all_upgrade_definitions()
-        # Sorteia exatamente 3 opções distintas entre as 4 existentes
+        # Sorteia exatamente 3 opções distintas entre as 5 existentes
         chosen_keys = random.sample(list(all_upgrades.keys()), 3)
 
         card_w = 270
@@ -478,9 +557,13 @@ class GameplayScene(BaseScene):
                     break
             return
 
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self._toggle_pause()
-            return
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                self._toggle_pause()
+                return
+            elif event.key in (pygame.K_SPACE, pygame.K_LSHIFT, pygame.K_RSHIFT):
+                self._activate_special_power()
+                return
 
         if self.game_over:
             for btn in self.gameover_buttons:
@@ -493,6 +576,46 @@ class GameplayScene(BaseScene):
                 if btn.handle_event(event):
                     break
             return
+
+    def _activate_special_power(self) -> None:
+        """Aciona a habilidade ativa do gatinho (Teleporte ou Tiro Perfurante Gigante)."""
+        if self.is_paused or self.game_over or self.is_leveling_up:
+            return
+
+        if self.ability_cooldown_timer > 0.0:
+            return
+
+        dir_vec = self.DIR_VECTORS.get(self.player_facing_dir, (0.0, 1.0))
+
+        if self.cat_power == "teleport":
+            blink_dist = 150.0
+            new_x = self.player_x + dir_vec[0] * blink_dist
+            new_y = self.player_y + dir_vec[1] * blink_dist
+
+            half_p = self.player_size // 2
+            self.player_x = max(half_p, min(SCREEN_WIDTH - half_p, new_x))
+            self.player_y = max(half_p + 30, min(SCREEN_HEIGHT - half_p, new_y))
+
+            self.invulnerable_timer = 0.35
+            self.ability_cooldown_timer = 2.5
+            self.engine.audio_manager.play_sfx("ui_hover")
+            self.damage_numbers.append(DamageNumber(self.player_x, self.player_y - 25, "⚡ TELEPORTE!", COLOR_PURPLE))
+
+        elif self.cat_power == "mega_beam":
+            beam_dmg = int(self.player_damage * 2.5)
+            self.mega_beams.append(
+                MegaBeamProjectile(
+                    self.player_x,
+                    self.player_y,
+                    dir_vec[0],
+                    dir_vec[1],
+                    damage=beam_dmg,
+                    speed=680.0
+                )
+            )
+            self.ability_cooldown_timer = 4.0
+            self.engine.audio_manager.play_sfx("shoot")
+            self.damage_numbers.append(DamageNumber(self.player_x, self.player_y - 25, "☄️ MEGA TIRO!", COLOR_CYAN))
 
     def _spawn_wave(self, dt: float) -> None:
         """Gera ondas de inimigos ao redor da tela com taxa crescente."""
@@ -544,15 +667,36 @@ class GameplayScene(BaseScene):
 
             dist = math.hypot(closest_enemy.x - self.player_x, closest_enemy.y - self.player_y)
             if dist < 650:
-                self.projectiles.append(
-                    Projectile(
-                        self.player_x,
-                        self.player_y,
-                        closest_enemy.x,
-                        closest_enemy.y,
-                        damage=self.player_damage
+                dx = closest_enemy.x - self.player_x
+                dy = closest_enemy.y - self.player_y
+                base_angle = math.atan2(dy, dx)
+
+                if self.cat_power == "double_attack":
+                    # Dispara 2 tiros simultâneos em leque suave
+                    for angle_offset in [-0.18, 0.18]:
+                        target_ang = base_angle + angle_offset
+                        tx = self.player_x + math.cos(target_ang) * 500
+                        ty = self.player_y + math.sin(target_ang) * 500
+                        self.projectiles.append(
+                            Projectile(
+                                self.player_x,
+                                self.player_y,
+                                tx,
+                                ty,
+                                damage=self.player_damage
+                            )
+                        )
+                else:
+                    self.projectiles.append(
+                        Projectile(
+                            self.player_x,
+                            self.player_y,
+                            closest_enemy.x,
+                            closest_enemy.y,
+                            damage=self.player_damage
+                        )
                     )
-                )
+
                 self.engine.audio_manager.play_sfx("shoot")
                 self.attack_timer = 0.0
 
@@ -631,12 +775,17 @@ class GameplayScene(BaseScene):
         self.player_x = max(half_p, min(SCREEN_WIDTH - half_p, self.player_x))
         self.player_y = max(half_p + 30, min(SCREEN_HEIGHT - half_p, self.player_y))
 
+        # Atualiza timer de habilidade especial
+        if self.ability_cooldown_timer > 0.0:
+            self.ability_cooldown_timer = max(0.0, self.ability_cooldown_timer - dt)
+
         # Disparo automático e Spawn de inimigos
         self._auto_attack(dt)
         self._spawn_wave(dt)
 
-        # Atualiza projéteis
+        # Atualiza projéteis normais e tiros gigantes perfurantes
         self.projectiles = [p for p in self.projectiles if p.update(dt)]
+        self.mega_beams = [b for b in self.mega_beams if b.update(dt)]
 
         # Atualiza inimigos e colisão com projéteis
         player_rect = pygame.Rect(
@@ -661,7 +810,7 @@ class GameplayScene(BaseScene):
                     self._trigger_game_over()
                     return
 
-            # Colisão Projétil x Inimigo
+            # Colisão Projétil Padrão x Inimigo
             for proj in self.projectiles[:]:
                 p_rect = pygame.Rect(int(proj.x - 6), int(proj.y - 6), 12, 12)
                 if enemy.rect.colliderect(p_rect):
@@ -671,8 +820,36 @@ class GameplayScene(BaseScene):
                         DamageNumber(enemy.x, enemy.y - 12, dmg_display, COLOR_GOLD)
                     )
                     self.score += proj.damage
+
+                    # Roubo de Vida: cura 5% do dano causado (mínimo 1 HP)
+                    if self.cat_power == "lifesteal" and self.player_hp < self.player_max_hp:
+                        heal_amount = max(1, math.ceil(proj.damage * 0.05))
+                        self.player_hp = min(self.player_max_hp, self.player_hp + heal_amount)
+                        self.damage_numbers.append(
+                            DamageNumber(self.player_x, self.player_y - 22, f"+{heal_amount} HP", COLOR_GREEN)
+                        )
+
                     if proj in self.projectiles:
                         self.projectiles.remove(proj)
+                    self.engine.audio_manager.play_sfx("hit")
+
+            # Colisão Mega Beam (Tiro Perfurante Gigante) x Inimigo
+            for beam in self.mega_beams:
+                b_rect = pygame.Rect(int(beam.x - beam.radius), int(beam.y - beam.radius), beam.radius * 2, beam.radius * 2)
+                if enemy not in beam.hit_enemies and enemy.rect.colliderect(b_rect):
+                    beam.hit_enemies.add(enemy)
+                    enemy.hp -= beam.damage
+                    self.damage_numbers.append(
+                        DamageNumber(enemy.x, enemy.y - 14, f"{int(beam.damage)} ☄️", COLOR_CYAN)
+                    )
+                    self.score += beam.damage
+
+                    if self.cat_power == "lifesteal" and self.player_hp < self.player_max_hp:
+                        heal_amount = max(1, math.ceil(beam.damage * 0.05))
+                        self.player_hp = min(self.player_max_hp, self.player_hp + heal_amount)
+                        self.damage_numbers.append(
+                            DamageNumber(self.player_x, self.player_y - 22, f"+{heal_amount} HP", COLOR_GREEN)
+                        )
                     self.engine.audio_manager.play_sfx("hit")
 
         # Inimigos derrotados -> Drops de XP e Ouro
@@ -718,6 +895,15 @@ class GameplayScene(BaseScene):
                 remaining_drops.append(drop)
         self.drops = remaining_drops
 
+        # Regeneração contínua de HP (1% do HP máximo por segundo por carta acumulada)
+        if self.upgrade_counts.get("hp_regen", 0) > 0 and self.player_hp < self.player_max_hp:
+            regen_rate = self.player_max_hp * (self.upgrade_counts["hp_regen"] * 0.01)
+            self.hp_regen_accumulator += regen_rate * dt
+            if self.hp_regen_accumulator >= 1.0:
+                heal_pts = int(self.hp_regen_accumulator)
+                self.hp_regen_accumulator -= heal_pts
+                self.player_hp = min(self.player_max_hp, self.player_hp + heal_pts)
+
         # Atualiza números de dano
         self.damage_numbers = [d for d in self.damage_numbers if d.update(dt)]
 
@@ -739,15 +925,18 @@ class GameplayScene(BaseScene):
         for drop in self.drops:
             drop.draw(surface, self.engine.asset_manager)
 
-        # Renderiza Projéteis
+        # Renderiza Projéteis Padrão e Mega Beams
         for proj in self.projectiles:
             proj.draw(surface, self.engine.asset_manager)
+
+        for beam in self.mega_beams:
+            beam.draw(surface, self.engine.asset_manager)
 
         # Renderiza Inimigos
         for enemy in self.enemies:
             enemy.draw(surface, self.engine.asset_manager)
 
-        # Renderiza Jogador (Gatinho Azul com sombra e animação 8-direcional)
+        # Renderiza Jogador (Gatinho Selecionado com sombra e animação 8-direcional)
         if not self.game_over:
             # Sombra suave sob o gato
             self.engine.asset_manager.draw_shadow(
@@ -832,11 +1021,64 @@ class GameplayScene(BaseScene):
             align="topright"
         )
 
+        # --- Card de Poder Especial do Gatinho (Acima da Barra de HP) ---
+        power_info = POWER_DEFINITIONS.get(self.cat_power, POWER_DEFINITIONS["none"])
+        is_active_skill = (power_info["type"] == "active")
+        is_ready = (self.ability_cooldown_timer <= 0.0)
+
+        card_w = 280
+        card_h = 32
+        card_x = 20
+        card_y = SCREEN_HEIGHT - 74
+
+        card_bg = (24, 18, 38) if not is_ready else (18, 35, 42)
+        card_border = power_info["color"] if is_ready else (65, 55, 85)
+
+        card_rect = pygame.Rect(card_x, card_y, card_w, card_h)
+        pygame.draw.rect(surface, card_bg, card_rect, border_radius=6)
+        pygame.draw.rect(surface, card_border, card_rect, width=2 if is_ready else 1, border_radius=6)
+
+        if is_active_skill:
+            if is_ready:
+                status_text = "PRONTO [ESPAÇO]"
+                status_color = COLOR_CYAN if self.cat_power == "mega_beam" else COLOR_PURPLE
+            else:
+                status_text = f"RECARGA: {self.ability_cooldown_timer:.1f}s"
+                status_color = COLOR_TEXT_MUTED
+        elif self.cat_power == "double_attack":
+            status_text = "DISPARO DUPLO"
+            status_color = COLOR_GOLD
+        elif self.cat_power == "lifesteal":
+            status_text = "+5% DANO EM HP"
+            status_color = COLOR_GREEN
+        else:
+            status_text = "SEM PODER"
+            status_color = COLOR_TEXT_MUTED
+
+        self.engine.asset_manager.render_text(
+            surface,
+            f"{power_info['icon']} {power_info['name']}",
+            (card_x + 8, card_y + 8),
+            size=14,
+            color=COLOR_TEXT_LIGHT,
+            bold=True
+        )
+
+        self.engine.asset_manager.render_text(
+            surface,
+            status_text,
+            (card_rect.right - 8, card_y + 8),
+            size=13,
+            color=status_color,
+            bold=True,
+            align="topright"
+        )
+
         # Barra de Vida do Jogador (Canto inferior esquerdo)
         hp_bar_w = 220
         hp_bar_h = 16
         hp_bar_x = 20
-        hp_bar_y = SCREEN_HEIGHT - 40
+        hp_bar_y = SCREEN_HEIGHT - 34
         pygame.draw.rect(surface, (40, 20, 20), (hp_bar_x, hp_bar_y, hp_bar_w, hp_bar_h), border_radius=4)
         hp_fill = max(0, int(hp_bar_w * (self.player_hp / max(1, self.player_max_hp))))
         pygame.draw.rect(surface, COLOR_GREEN if self.player_hp > 30 else COLOR_RED, (hp_bar_x, hp_bar_y, hp_fill, hp_bar_h), border_radius=4)
@@ -851,8 +1093,9 @@ class GameplayScene(BaseScene):
             bold=True
         )
 
+
         # Status / Upgrades acumulados no canto inferior
-        upgrades_hud = f"HP Lv.{self.upgrade_counts['hp']} | Dano Lv.{self.upgrade_counts['damage']} | Atk.Spd Lv.{self.upgrade_counts['attack_speed']} | Vel Lv.{self.upgrade_counts['move_speed']}"
+        upgrades_hud = f"HP Lv.{self.upgrade_counts['hp']} | Dano Lv.{self.upgrade_counts['damage']} | Atk.Spd Lv.{self.upgrade_counts['attack_speed']} | Vel Lv.{self.upgrade_counts['move_speed']} | Regen Lv.{self.upgrade_counts['hp_regen']}"
         self.engine.asset_manager.render_text(
             surface,
             upgrades_hud,

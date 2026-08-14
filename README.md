@@ -111,16 +111,20 @@ bullet-heaven/
 ├── Minifantasy_Creatures_.../  # Spritesheets das criaturas e inimigos
 ├── saves/                      # Diretório de persistência local
 │   ├── settings.json           # Configurações de áudio e vídeo
-│   └── progress.json           # Estatísticas de carreira e ouro do jogador
+│   └── progress.json           # Estatísticas, ouro guardado e skins desbloqueadas
 ├── tests/                      # Bateria de testes unitários e de integração
 │   ├── test_save_and_engine.py
-│   └── test_scenes_integration.py
+│   ├── test_scenes_integration.py
+│   ├── test_cat_sprites.py
+│   ├── test_cat_shop.py
+│   └── test_cat_powers.py
 └── src/
     ├── main.py                 # Ponto de entrada da aplicação
     ├── core/
     │   ├── constants.py        # Constantes de resolução, cores e balanceamento
     │   ├── engine.py           # GameEngine (Loop a 60 FPS e gerenciador de cenas)
     │   ├── save_system.py      # Gerenciador de save/load JSON com deep merge
+    │   ├── skin_catalog.py     # Catálogo com 50 skins de gatinhos, lore e custos
     │   ├── audio_manager.py    # Mixer de áudio e sintetizador procedural PCM
     │   └── asset_manager.py    # Gerenciador de fontes, spritesheets e sombras
     ├── ui/
@@ -130,6 +134,7 @@ bullet-heaven/
         ├── base_scene.py       # Interface base abstrata para cenas
         ├── main_menu_scene.py  # Menu Principal animado e modal de estatísticas
         ├── settings_scene.py   # Tela de Configurações dividida em abas
+        ├── cat_shop_scene.py   # Santuário dos Gatos: seleção e desbloqueio com ouro
         └── gameplay_scene.py   # Loop principal do jogo de sobrevivência
 ```
 

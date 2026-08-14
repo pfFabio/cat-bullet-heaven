@@ -78,6 +78,14 @@ class SaveManager:
             with open(PROGRESS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 self.progress = self._deep_merge(DEFAULT_PROGRESS, data)
+                # Garante chaves de skins mesmo para saves antigos
+                if "unlocked_skins" not in self.progress or not isinstance(self.progress["unlocked_skins"], list):
+                    self.progress["unlocked_skins"] = ["blue_0"]
+                elif "blue_0" not in self.progress["unlocked_skins"]:
+                    self.progress["unlocked_skins"].insert(0, "blue_0")
+
+                if "selected_skin" not in self.progress or not self.progress["selected_skin"]:
+                    self.progress["selected_skin"] = "blue_0"
         except Exception as e:
             logger.error(f"Erro ao carregar {PROGRESS_FILE}: {e}. Usando progresso padrão.")
             self.progress = DEFAULT_PROGRESS.copy()
@@ -101,6 +109,11 @@ class SaveManager:
         self.load_settings()
         self.load_progress()
 
+    def save_all(self) -> None:
+        """Salva todos os dados no disco."""
+        self.save_settings()
+        self.save_progress()
+
     def update_setting(self, key: str, value: Any) -> None:
         """Atualiza uma configuração específica e persiste."""
         self.settings[key] = value
@@ -108,9 +121,66 @@ class SaveManager:
 
     def add_gold(self, amount: int) -> int:
         """Adiciona ouro ao progresso do jogador e salva."""
-        self.progress["total_gold"] = self.progress.get("total_gold", 0) + amount
+        self.progress["total_gold"] = self.progress.get("total_gold", 0) + max(0, amount)
         self.save_progress()
         return self.progress["total_gold"]
+
+    def spend_gold(self, amount: int) -> bool:
+        """Debita ouro do jogador caso possua saldo suficiente."""
+        if amount < 0:
+            return False
+        current_gold = self.progress.get("total_gold", 0)
+        if current_gold >= amount:
+            self.progress["total_gold"] = current_gold - amount
+            self.save_progress()
+            return True
+        return False
+
+    def get_unlocked_skins(self) -> list:
+        """Retorna a lista de IDs de skins desbloqueadas."""
+        unlocked = self.progress.get("unlocked_skins", ["blue_0"])
+        if not isinstance(unlocked, list):
+            unlocked = ["blue_0"]
+        if "blue_0" not in unlocked:
+            unlocked.append("blue_0")
+        return unlocked
+
+    def is_skin_unlocked(self, skin_id: str) -> bool:
+        """Verifica se uma skin específica está desbloqueada."""
+        if skin_id == "blue_0":
+            return True
+        return skin_id in self.get_unlocked_skins()
+
+    def get_selected_skin(self) -> str:
+        """Retorna o ID da skin felina atualmente equipada."""
+        skin = self.progress.get("selected_skin", "blue_0")
+        if not self.is_skin_unlocked(skin):
+            skin = "blue_0"
+            self.set_selected_skin("blue_0")
+        return skin
+
+    def set_selected_skin(self, skin_id: str) -> bool:
+        """Define e salva a skin atualmente ativa pelo jogador."""
+        if self.is_skin_unlocked(skin_id):
+            self.progress["selected_skin"] = skin_id
+            self.save_progress()
+            return True
+        return False
+
+    def unlock_skin(self, skin_id: str, cost: int) -> bool:
+        """Desbloqueia uma nova skin debitando o ouro e equipando-a."""
+        if self.is_skin_unlocked(skin_id):
+            return True
+
+        if self.spend_gold(cost):
+            unlocked = self.get_unlocked_skins()
+            if skin_id not in unlocked:
+                unlocked.append(skin_id)
+            self.progress["unlocked_skins"] = unlocked
+            self.progress["selected_skin"] = skin_id
+            self.save_progress()
+            return True
+        return False
 
     def record_run_stats(self, score: int, kills: int, time_survived: float, gold_earned: int) -> None:
         """Registra as estatísticas de uma partida finalizada."""
@@ -135,3 +205,4 @@ class SaveManager:
         """Restaura o progresso para os valores iniciais (zerar save)."""
         self.progress = DEFAULT_PROGRESS.copy()
         self.save_progress()
+

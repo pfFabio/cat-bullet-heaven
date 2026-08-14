@@ -1,12 +1,17 @@
 {
-    "total_gold": 2348,
-    "high_score": 12275,
-    "games_played": 13,
-    "total_kills": 1034,
-    "time_survived_record_sec": 172.0519999999839,
+    "total_gold": 880,
+    "high_score": 76475.68233345386,
+    "games_played": 25,
+    "total_kills": 2169,
+    "time_survived_record_sec": 289.6369999999619,
     "unlocked_heroes": [
         "cubo_azul"
     ],
+    "unlocked_skins": [
+        "blue_0",
+        "calico_0"
+    ],
+    "selected_skin": "blue_0",
     "upgrades": {
         "max_hp": 0,
         "damage": 0,

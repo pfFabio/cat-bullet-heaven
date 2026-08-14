@@ -14,6 +14,7 @@ from src.core.constants import (
     COLOR_GOLD,
     COLOR_CYAN,
     COLOR_PURPLE,
+    COLOR_GREEN,
     COLOR_RED,
     COLOR_TEXT_LIGHT,
     COLOR_TEXT_MUTED,
@@ -38,10 +39,10 @@ class MainMenuScene(BaseScene):
     def _init_buttons(self) -> None:
         """Inicializa os botões do menu."""
         btn_w = 340
-        btn_h = 56
+        btn_h = 50
         center_x = SCREEN_WIDTH // 2 - btn_w // 2
-        start_y = 280
-        spacing = 68
+        start_y = 260
+        spacing = 58
 
         self.btn_play = Button(
             pygame.Rect(center_x, start_y, btn_w, btn_h),
@@ -52,26 +53,35 @@ class MainMenuScene(BaseScene):
             sound_manager=self.engine.audio_manager
         )
 
-        self.btn_settings = Button(
+        self.btn_cats = Button(
             pygame.Rect(center_x, start_y + spacing, btn_w, btn_h),
-            "CONFIGURAÇÕES",
-            on_click=self._on_settings_clicked,
+            "GATINHOS",
+            on_click=self._on_cats_clicked,
             accent_color=COLOR_GOLD,
             icon_cube_color=COLOR_GOLD,
             sound_manager=self.engine.audio_manager
         )
 
-        self.btn_stats = Button(
+        self.btn_settings = Button(
             pygame.Rect(center_x, start_y + spacing * 2, btn_w, btn_h),
-            "ESTATÍSTICAS",
-            on_click=self._toggle_stats,
+            "CONFIGURAÇÕES",
+            on_click=self._on_settings_clicked,
             accent_color=COLOR_PURPLE,
             icon_cube_color=COLOR_PURPLE,
             sound_manager=self.engine.audio_manager
         )
 
-        self.btn_quit = Button(
+        self.btn_stats = Button(
             pygame.Rect(center_x, start_y + spacing * 3, btn_w, btn_h),
+            "ESTATÍSTICAS",
+            on_click=self._toggle_stats,
+            accent_color=COLOR_GREEN,
+            icon_cube_color=COLOR_GREEN,
+            sound_manager=self.engine.audio_manager
+        )
+
+        self.btn_quit = Button(
+            pygame.Rect(center_x, start_y + spacing * 4, btn_w, btn_h),
             "SAIR DO JOGO",
             on_click=self._on_quit_clicked,
             accent_color=COLOR_RED,
@@ -79,7 +89,7 @@ class MainMenuScene(BaseScene):
             sound_manager=self.engine.audio_manager
         )
 
-        self.buttons = [self.btn_play, self.btn_settings, self.btn_stats, self.btn_quit]
+        self.buttons = [self.btn_play, self.btn_cats, self.btn_settings, self.btn_stats, self.btn_quit]
 
         # Botão fechar modal de estatísticas
         modal_w, modal_h = 500, 380
@@ -97,6 +107,10 @@ class MainMenuScene(BaseScene):
     def _on_play_clicked(self) -> None:
         """Inicia a cena de jogo."""
         self.engine.change_scene("gameplay")
+
+    def _on_cats_clicked(self) -> None:
+        """Abre a cena do Santuário dos Gatinhos (Skins & Desbloqueio)."""
+        self.engine.change_scene("cat_shop")
 
     def _on_settings_clicked(self) -> None:
         """Abre a cena de configurações."""
@@ -151,17 +165,17 @@ class MainMenuScene(BaseScene):
 
         # Título animado com pulso suave e brilho
         pulse = math.sin(self.anim_time * 2.5) * 4
-        title_y = 90 + int(pulse)
+        title_y = 80 + int(pulse)
 
-        # Cubo decorativo girando/pulsando no cabeçalho
-        # Gatinho protagonista animado acima do título
-        cat_frames = self.engine.asset_manager.get_cat_frames("blue_0", action="sit", direction="down", scale=(54, 54))
+        # Gatinho protagonista ativo animado acima do título
+        active_skin = self.engine.save_manager.get_selected_skin()
+        cat_frames = self.engine.asset_manager.get_cat_frames(active_skin, action="sit", direction="down", scale=(56, 56))
         if cat_frames:
             self.engine.asset_manager.draw_shadow(
                 surface,
                 SCREEN_WIDTH // 2,
                 title_y - 20,
-                radius_x=20,
+                radius_x=22,
                 radius_y=8,
                 alpha=85
             )

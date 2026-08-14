@@ -71,8 +71,8 @@ class TestScenesIntegration(unittest.TestCase):
         self.assertTrue(scene.is_leveling_up)
         self.assertEqual(len(scene.upgrade_cards), 3)
 
-        # As 3 opções sorteadas devem pertencer ao conjunto das 4 opções
-        allowed_upgrades = {"hp", "damage", "attack_speed", "move_speed"}
+        # As 3 opções sorteadas devem pertencer ao conjunto das 5 opções
+        allowed_upgrades = {"hp", "damage", "attack_speed", "move_speed", "hp_regen"}
         for card in scene.upgrade_cards:
             self.assertIn(card.upgrade_id, allowed_upgrades)
 
@@ -81,6 +81,7 @@ class TestScenesIntegration(unittest.TestCase):
         initial_damage = scene.player_damage
         initial_atk_cd = scene.attack_cooldown
         initial_speed = scene.player_speed
+        initial_regen = scene.upgrade_counts["hp_regen"]
 
         chosen_upgrade_id = scene.upgrade_cards[0].upgrade_id
 
@@ -100,6 +101,28 @@ class TestScenesIntegration(unittest.TestCase):
             self.assertLess(scene.attack_cooldown, initial_atk_cd)
         elif chosen_upgrade_id == "move_speed":
             self.assertEqual(scene.player_speed, initial_speed + 30.0)
+        elif chosen_upgrade_id == "hp_regen":
+            self.assertEqual(scene.upgrade_counts["hp_regen"], initial_regen + 1)
+
+    def test_hp_regen_upgrade_recovers_health_over_time(self):
+        """Testa se a carta de Recuperação de HP recupera 1% do HP Máx por segundo por nível."""
+        self.engine.change_scene("gameplay")
+        scene = self.engine.current_scene
+
+        # Aplica 2 cartas de Recuperação de HP (2% por segundo)
+        scene._apply_hp_regen_upgrade()
+        scene._apply_hp_regen_upgrade()
+        self.assertEqual(scene.upgrade_counts["hp_regen"], 2)
+
+        # Reduz HP do jogador para 40 de 100
+        scene.player_max_hp = 100
+        scene.player_hp = 40
+
+        # Simula 1 segundo de gameplay (dt = 1.0)
+        scene.update(1.0)
+
+        # 2% de 100 = 2 HP recuperados no segundo
+        self.assertEqual(scene.player_hp, 42)
 
     def tearDown(self):
         pygame.quit()

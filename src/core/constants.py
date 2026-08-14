@@ -53,6 +53,13 @@ COLOR_PROJECTILE = (254, 240, 138)      # Projétil Amarelo
 COLOR_XP_GEM = (56, 189, 248)           # Gema XP Ciano
 COLOR_GOLD_COIN = (250, 204, 21)        # Moeda de Ouro
 
+# Cores de Raridade de Skins / Colecionáveis
+COLOR_RARITY_COMMON = (148, 163, 184)      # Cinza Claro
+COLOR_RARITY_UNCOMMON = (34, 197, 94)      # Verde Esmeralda
+COLOR_RARITY_RARE = (59, 130, 246)         # Azul Safira
+COLOR_RARITY_EPIC = (168, 85, 247)         # Roxo Místico
+COLOR_RARITY_LEGENDARY = (255, 204, 0)     # Ouro Lendário
+
 # Configurações Padrão de Settings
 DEFAULT_SETTINGS = {
     "master_volume": 0.8,
@@ -73,6 +80,8 @@ DEFAULT_PROGRESS = {
     "total_kills": 0,
     "time_survived_record_sec": 0,
     "unlocked_heroes": ["cubo_azul"],
+    "unlocked_skins": ["blue_0"],
+    "selected_skin": "blue_0",
     "upgrades": {
         "max_hp": 0,
         "damage": 0,
@@ -81,3 +90,4 @@ DEFAULT_PROGRESS = {
         "attack_speed": 0
     }
 }
+

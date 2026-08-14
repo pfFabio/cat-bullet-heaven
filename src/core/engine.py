@@ -18,6 +18,7 @@ from src.scenes.base_scene import BaseScene
 from src.scenes.main_menu_scene import MainMenuScene
 from src.scenes.settings_scene import SettingsScene
 from src.scenes.gameplay_scene import GameplayScene
+from src.scenes.cat_shop_scene import CatShopScene
 
 
 class GameEngine:
@@ -47,6 +48,7 @@ class GameEngine:
             "main_menu": MainMenuScene(self),
             "settings": SettingsScene(self),
             "gameplay": GameplayScene(self),
+            "cat_shop": CatShopScene(self),
         }
         self.current_scene_name = "main_menu"
         self.current_scene: BaseScene = self.scenes[self.current_scene_name]
