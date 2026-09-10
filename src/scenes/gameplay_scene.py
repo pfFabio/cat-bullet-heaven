@@ -21,6 +21,9 @@ from src.core.constants import (
     COLOR_ENEMY_FAST,
     COLOR_ENEMY_TANK,
     COLOR_ENEMY_SLIME,
+    COLOR_ENEMY_WARG,
+    COLOR_ENEMY_GOLDEN,
+    COLOR_ENEMY_PUP,
     COLOR_ENEMY_BOSS,
     COLOR_PROJECTILE,
     COLOR_BOSS_PROJECTILE,
@@ -203,47 +206,63 @@ class Enemy:
         self.facing_left = False
         self.flash_timer = 0.0
 
-        # Configura atributos por espécie
-        if enemy_type == "fast":  # Morcego
-            self.size = 22
-            base_hp = 32
+        # Configura atributos por espécie canina
+        if enemy_type in ("fast", "dog_husky", "dog_greyhound"):  # Cão Galgo / Husky Ágil
+            self.size = 26
+            base_hp = 34
             base_speed = 175.0
             self.damage = int(8 + scaling * 2)
             self.color = COLOR_ENEMY_FAST
             self.xp_value = int(16 * max(1.0, scaling * 0.8))
-            self.sprite_scale = (36, 36)
-        elif enemy_type == "tank":  # Troll
-            self.size = 38
-            base_hp = 160
-            base_speed = 68.0
+            self.sprite_scale = (48, 48)
+        elif enemy_type in ("tank", "dog_rottweiler", "dog_mastiff"):  # Cão Rottweiler / Mastiff Guarda
+            self.size = 40
+            base_hp = 170
+            base_speed = 70.0
             self.damage = int(24 + scaling * 4)
             self.color = COLOR_ENEMY_TANK
             self.xp_value = int(45 * max(1.0, scaling * 0.8))
-            self.sprite_scale = (54, 54)
-        elif enemy_type == "slime_mother":  # Slime Mãe (divide ao morrer)
-            self.size = 42
-            base_hp = 180
-            base_speed = 62.0
-            self.damage = int(16 + scaling * 3)
-            self.color = COLOR_ENEMY_SLIME
-            self.xp_value = int(50 * max(1.0, scaling * 0.8))
             self.sprite_scale = (56, 56)
-        elif enemy_type == "slime":  # Slime pequeno
-            self.size = 18
+        elif enemy_type in ("warg", "beast_warg"):  # Warg das Sombras (Fera Canina Selvagem)
+            self.size = 44
+            base_hp = 220
+            base_speed = 85.0
+            self.damage = int(28 + scaling * 4.5)
+            self.color = COLOR_ENEMY_WARG
+            self.xp_value = int(60 * max(1.0, scaling * 0.8))
+            self.sprite_scale = (60, 60)
+        elif enemy_type in ("slime_mother", "dog_mother", "dog_golden", "dog_retriever"):  # Golden Retriever Matriarca
+            self.size = 38
+            base_hp = 180
+            base_speed = 65.0
+            self.damage = int(16 + scaling * 3)
+            self.color = COLOR_ENEMY_GOLDEN
+            self.xp_value = int(50 * max(1.0, scaling * 0.8))
+            self.sprite_scale = (52, 52)
+        elif enemy_type in ("slime", "dog_pup", "dog_small"):  # Filhote Canino / Puppy Ágil
+            self.size = 20
             base_hp = 28
-            base_speed = 135.0
+            base_speed = 140.0
             self.damage = int(7 + scaling * 1.5)
-            self.color = COLOR_ENEMY_SLIME
+            self.color = COLOR_ENEMY_PUP
             self.xp_value = int(12 * max(1.0, scaling * 0.8))
-            self.sprite_scale = (28, 28)
-        else:  # basic (Lobo)
+            self.sprite_scale = (34, 34)
+        elif enemy_type in ("dog_hound", "dog_shepherd"):  # Cão Rastreador / Pastor
+            self.size = 30
+            base_hp = 65
+            base_speed = 120.0
+            self.damage = int(14 + scaling * 2.8)
+            self.color = COLOR_ENEMY_BASIC
+            self.xp_value = int(24 * max(1.0, scaling * 0.8))
+            self.sprite_scale = (46, 46)
+        else:  # basic ou wolf (Lobo Selvagem Minifantasy)
             self.size = 32
             base_hp = 55
             base_speed = 110.0
             self.damage = int(12 + scaling * 2.5)
             self.color = COLOR_ENEMY_BASIC
             self.xp_value = int(20 * max(1.0, scaling * 0.8))
-            self.sprite_scale = (100, 100)
+            self.sprite_scale = (54, 54)
 
         # Aplica escalonamento de vida e velocidade suave
         self.max_hp = int(base_hp * scaling)
@@ -284,7 +303,7 @@ class Enemy:
 
         frames = asset_mgr.get_enemy_frames(self.enemy_type, action="walk", scale=self.sprite_scale)
         if frames:
-            fps = 8.0 if self.enemy_type != "fast" else 10.0
+            fps = 8.0 if self.enemy_type != "fast" else 12.0
             frame_idx = int(self.anim_time * fps) % len(frames)
             frame = frames[frame_idx]
             if self.facing_left:
@@ -979,16 +998,18 @@ class GameplayScene(BaseScene):
                 sx = -margin
                 sy = random.uniform(0, SCREEN_HEIGHT)
 
-            # Composição dinâmica da horda
+            # Composição dinâmica da horda de Cães e Feras Caninas
             r = random.random()
-            if (self.time_survived > 105 or self.player_level >= 8) and r < 0.20:
-                etype = "tank"
-            elif (self.time_survived > 65 or self.player_level >= 5) and r < 0.35:
-                etype = "slime_mother"
-            elif (self.time_survived > 30 or self.player_level >= 3) and r < 0.55:
-                etype = "fast"
+            if (self.time_survived > 115 or self.player_level >= 9) and r < 0.18:
+                etype = "warg"          # Warg Fera Canina das Sombras
+            elif (self.time_survived > 85 or self.player_level >= 7) and r < 0.35:
+                etype = "tank"          # Cão Rottweiler / Mastiff Guarda
+            elif (self.time_survived > 55 or self.player_level >= 5) and r < 0.50:
+                etype = "slime_mother"  # Cão Golden Retriever (Matriarca que divide em filhotes)
+            elif (self.time_survived > 25 or self.player_level >= 3) and r < 0.70:
+                etype = "fast"          # Cão Husky / Galgo Ágil
             else:
-                etype = "basic"
+                etype = "basic"         # Lobo Selvagem (Minifantasy)
 
             self.enemies.append(Enemy(sx, sy, enemy_type=etype, scaling=scaling))
 
@@ -1333,8 +1354,8 @@ class GameplayScene(BaseScene):
                     if self.active_boss == enemy:
                         self.active_boss = None
 
-                # Se for Slime Mãe, divide em 2 mini-slimes
-                elif enemy.enemy_type == "slime_mother":
+                # Se for Matriarca Canina (slime_mother), divide em 2 filhotes
+                elif enemy.enemy_type in ("slime_mother", "dog_mother", "dog_golden", "dog_retriever"):
                     self.score += 20
                     scaling = self.get_progression_scaling()
                     for offset_ang in [-0.6, 0.6]:
@@ -1345,13 +1366,19 @@ class GameplayScene(BaseScene):
                     if random.random() < 0.40:
                         self.drops.append(DropItem(enemy.x + random.uniform(-10, 10), enemy.y, "gold", value=random.randint(1, 4)))
 
-                elif enemy.enemy_type == "tank":
+                elif enemy.enemy_type in ("warg", "beast_warg"):
+                    self.score += 35
+                    self.drops.append(DropItem(enemy.x, enemy.y, "xp", value=enemy.xp_value))
+                    if random.random() < 0.50:
+                        self.drops.append(DropItem(enemy.x + random.uniform(-10, 10), enemy.y, "gold", value=random.randint(2, 6)))
+
+                elif enemy.enemy_type in ("tank", "dog_rottweiler", "dog_mastiff"):
                     self.score += 25
                     self.drops.append(DropItem(enemy.x, enemy.y, "xp", value=enemy.xp_value))
                     if random.random() < 0.35:
                         self.drops.append(DropItem(enemy.x + random.uniform(-10, 10), enemy.y, "gold", value=random.randint(1, 4)))
 
-                elif enemy.enemy_type == "fast":
+                elif enemy.enemy_type in ("fast", "dog_husky", "dog_greyhound"):
                     self.score += 15
                     self.drops.append(DropItem(enemy.x, enemy.y, "xp", value=enemy.xp_value))
                     if random.random() < 0.30:

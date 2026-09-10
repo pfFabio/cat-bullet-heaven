@@ -46,10 +46,13 @@ COLOR_BTN_BORDER_HOVER = (255, 204, 0)
 # Cores dos Elementos de Gameplay (Cubos Coloridos)
 COLOR_PLAYER_CUBE = (0, 220, 255)       # Cubo Herói Azul Neon
 COLOR_PLAYER_GLOW = (0, 140, 255)
-COLOR_ENEMY_BASIC = (239, 68, 68)       # Cubo Inimigo Vermelho
-COLOR_ENEMY_FAST = (249, 115, 22)       # Cubo Inimigo Laranja
-COLOR_ENEMY_TANK = (168, 85, 247)       # Cubo Inimigo Roxo
-COLOR_ENEMY_SLIME = (74, 222, 128)      # Cubo Inimigo Slime Verde
+COLOR_ENEMY_BASIC = (239, 68, 68)       # Cubo Inimigo Vermelho (Lobo Selvagem)
+COLOR_ENEMY_FAST = (249, 115, 22)       # Cubo Inimigo Laranja (Cão Husky / Galgo)
+COLOR_ENEMY_TANK = (168, 85, 247)       # Cubo Inimigo Roxo (Cão Rottweiler Guarda)
+COLOR_ENEMY_WARG = (147, 51, 234)       # Cubo Inimigo Violeta Escuro (Warg Selvagem)
+COLOR_ENEMY_GOLDEN = (245, 158, 11)     # Cubo Inimigo Dourado (Golden Retriever)
+COLOR_ENEMY_PUP = (251, 191, 36)        # Cubo Inimigo Amarelo (Filhote Canino)
+COLOR_ENEMY_SLIME = (74, 222, 128)      # Cubo Inimigo Verde (Compatibilidade)
 COLOR_ENEMY_BOSS = (220, 38, 38)        # Cubo Chefe Carmesim
 COLOR_PROJECTILE = (254, 240, 138)      # Projétil Amarelo
 COLOR_BOSS_PROJECTILE = (239, 68, 68)   # Projétil Vermelho de Chefe

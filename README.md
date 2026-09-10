@@ -14,12 +14,13 @@ Protótipo de jogo estilo **Bullet Heaven / Roguelite de Sobrevivência** desenv
 - **🐾 Protagonista Felino Animado**:
   - Animação completa 8-direcional (correr, sentar, olhar em volta e repouso) com sombras suaves dinâmicas.
   - Sistema de fallback automático para cubos geométricos neon em caso de ausência de assets.
-- **🐺 Inimigos com IA e Separação Orgânica**:
-  - **Lobo (Básico)**: Perseguição equilibrada e resistente.
-  - **Morcego (Rápido)**: Deslocamento ágil que força manobras de esquiva.
-  - **Slime Mãe (Divisão)**: Divide-se em múltiplos mini-slimes ágeis ao ser derrotada.
-  - **Troll (Tanque)**: Alta vitalidade e grande impacto.
-  - **Separação Suave**: Repulsão mútua entre inimigos evitando empilhamento em um único ponto.
+- **🐶 Horda Canina e Feras com IA (Gatos vs Cachorros)**:
+  - **Cão Husky / Galgo Ágil (Rápido)**: Deslocamento veloz com animação completa de corrida em 7 frames (*Dog Mega Pack*), forçando manobras evasivas.
+  - **Cão Golden Retriever (Matriarca)**: Ao ser derrotada, divide-se e libera filhotes brincalhões e rápidos (*Pups*).
+  - **Cão Rottweiler / Mastiff (Tanque)**: Cão de guarda corpulento com alta vitalidade e mordida destrutiva.
+  - **Warg das Sombras (Fera de Elite)**: Antiga fera canina ancestral com altíssima resistência e abundância de XP e ouro.
+  - **Lobo Selvagem (Básico)**: Perseguição equilibrada e em bando (preservado das feras clássicas).
+  - **Separação Suave**: Repulsão física mútua entre inimigos evitando sobreposição em um único ponto.
 - **👑 Chefes de Fase Monumentais (Stage Bosses)**:
   - **Minotauro Furioso** (Aos 2:00 ou Nível 10): Ataques de investida (*Charge Dash*) com aviso visual de linha vermelha e invocação de matilhas de lobos.
   - **Ciclope Colossal** (Aos 5:00 ou Nível 20): Disparo de anéis de energia circular (*Orb Nova*) e modo enfurecido com aumento de velocidade e agressividade.

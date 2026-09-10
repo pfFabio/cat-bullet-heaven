@@ -37,6 +37,44 @@ class AssetManager:
         "beg": (24, 4),
     }
 
+    # Configuração dos cães do Dog Mega Pack: (linha_y, lista_de_indices_de_frames)
+    DOG_ROW_CONFIG = {
+        # Linha 0 (Cão Galgo / Husky): 7 frames de corrida fluida
+        "fast": (0, [0, 1, 2, 3, 4, 5, 6]),
+        "dog_husky": (0, [0, 1, 2, 3, 4, 5, 6]),
+        "dog_greyhound": (0, [0, 1, 2, 3, 4, 5, 6]),
+
+        # Linha 1 (Golden Retriever): Matriarca que anda, late e convoca filhotes
+        "slime_mother": (1, [2, 3, 4, 5, 6, 3]),
+        "dog_mother": (1, [2, 3, 4, 5, 6, 3]),
+        "dog_golden": (1, [2, 3, 4, 5, 6, 3]),
+        "dog_retriever": (1, [2, 3, 4, 5, 6, 3]),
+
+        # Linha 2 (Rottweiler / Mastiff): 6 frames de caminhada pesada de guarda
+        "tank": (2, [0, 1, 2, 3, 4, 5]),
+        "dog_rottweiler": (2, [0, 1, 2, 3, 4, 5]),
+        "dog_mastiff": (2, [0, 1, 2, 3, 4, 5]),
+
+        # Linha 3 (Filhotes e Rastreadores): 6 frames de trote ágil
+        "slime": (3, [0, 1, 2, 3, 4, 5]),
+        "dog_pup": (3, [0, 1, 2, 3, 4, 5]),
+        "dog_small": (3, [0, 1, 2, 3, 4, 5]),
+        "dog_hound": (3, [0, 1, 2, 3, 4, 5]),
+        "dog_shepherd": (3, [0, 1, 2, 3, 4, 5]),
+    }
+
+    # Itens colecionáveis e brinquedos caninos em DogItems.png (coluna, linha) de 32x32
+    DOG_ITEM_CELLS = {
+        "bone": (0, 0),
+        "big_bone": (1, 0),
+        "bed": (2, 0),
+        "collar": (0, 1),
+        "ball": (1, 1),
+        "bowl": (2, 1),
+        "bell_collar": (0, 2),
+        "color_ball": (1, 2),
+    }
+
     def __init__(self):
         self.fonts: Dict[Tuple[str, int, bool], pygame.font.Font] = {}
         self.cat_cache: Dict[Tuple[str, str, str, Tuple[int, int]], List[pygame.Surface]] = {}
@@ -57,6 +95,15 @@ class AssetManager:
             "Minifantasy_Creatures_v3.3_Free_Version",
             "Minifantasy_Creatures_Assets"
         )
+
+        # Assets de Cães (DogMegaPackFree)
+        self.dogs_sheet_path = os.path.join(base_dir, "DogMegaPackFree", "DogMegaPackFree", "Dogs.png")
+        if not os.path.exists(self.dogs_sheet_path):
+            self.dogs_sheet_path = os.path.join(base_dir, "DogMegaPackFree", "Dogs.png")
+
+        self.dog_items_path = os.path.join(base_dir, "DogMegaPackFree", "DogMegaPackFree", "DogItems.png")
+        if not os.path.exists(self.dog_items_path):
+            self.dog_items_path = os.path.join(base_dir, "DogMegaPackFree", "DogItems.png")
 
         self.bg_path = os.path.join(base_dir, "BG.jpg")
         if not os.path.exists(self.bg_path):
@@ -206,12 +253,44 @@ class AssetManager:
         scale: Tuple[int, int] = (36, 36)
     ) -> List[pygame.Surface]:
         """
-        Retorna quadros animados para os tipos de inimigos e chefes baseados no pacote Minifantasy Creatures.
+        Retorna quadros animados para os tipos de cães e feras caninas baseados
+        no Dog Mega Pack e no Minifantasy Creatures (mantendo Wolf e Warg).
         """
         cache_key = (enemy_type, action, scale)
         if cache_key in self.enemy_cache:
             return self.enemy_cache[cache_key]
 
+        # 1. Checa se é um cão do Dog Mega Pack (Dogs.png)
+        if enemy_type in self.DOG_ROW_CONFIG:
+            if not os.path.exists(self.dogs_sheet_path):
+                return []
+            if self.dogs_sheet_path not in self.raw_sheets:
+                try:
+                    self.raw_sheets[self.dogs_sheet_path] = pygame.image.load(self.dogs_sheet_path).convert_alpha()
+                except Exception:
+                    return []
+
+            sheet = self.raw_sheets[self.dogs_sheet_path]
+            row_idx, col_indices = self.DOG_ROW_CONFIG[enemy_type]
+            frames: List[pygame.Surface] = []
+            cell_w, cell_h = 64, 64
+            for c in col_indices:
+                rect = pygame.Rect(c * cell_w, row_idx * cell_h, cell_w, cell_h)
+                try:
+                    sub = sheet.subsurface(rect)
+                    if scale != (cell_w, cell_h):
+                        scaled = pygame.transform.scale(sub, scale)
+                    else:
+                        scaled = sub
+                    frames.append(scaled)
+                except Exception:
+                    continue
+
+            if frames:
+                self.enemy_cache[cache_key] = frames
+            return frames
+
+        # 2. Inimigos Minifantasy: Wolf, Warg e Chefes de Fase
         img_path = None
         if enemy_type == "boss_minotaur":
             if action == "attack":
@@ -223,23 +302,15 @@ class AssetManager:
                 img_path = os.path.join(self.minifantasy_dir, "Monsters", "Cyclop", "CyclopAttack.png")
             else:
                 img_path = os.path.join(self.minifantasy_dir, "Monsters", "Cyclop", "CyclopWalk.png")
-        elif enemy_type == "slime_mother":
-            img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Mother_Slime", "MotherSlimeGreenJumpAttack.png")
+        elif enemy_type in ("warg", "beast_warg"):
+            # Warg Selvagem das Feras (antigo mantido)
+            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Warg", "WargWalk.png")
             if not os.path.exists(img_path or ""):
-                img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Mother_Slime", "MotherSlimeGreenIdle.png")
-        elif enemy_type == "slime":
-            img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Slime", "SlimeGreenJumpAttack.png")
+                img_path = os.path.join(self.minifantasy_dir, "Beasts", "Warg", "WargJump.png")
+        else:  # basic ou wolf (Lobo antigo mantido)
+            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfWalk.png")
             if not os.path.exists(img_path or ""):
-                img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Slime", "SlimeGreenIdle.png")
-        elif enemy_type == "fast":
-            # Morcego
-            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Bat", "BatFlyIdle.png")
-        elif enemy_type == "tank":
-            # Troll
-            img_path = os.path.join(self.minifantasy_dir, "Monsters", "Troll", "TrollWalk.png")
-        else:  # basic
-            # Lobo
-            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfJump.png")
+                img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfJump.png")
 
         if not img_path or not os.path.exists(img_path):
             return []
@@ -271,6 +342,27 @@ class AssetManager:
         if frames:
             self.enemy_cache[cache_key] = frames
         return frames
+
+    def get_dog_item(self, item_name: str = "bone", scale: Tuple[int, int] = (24, 24)) -> Optional[pygame.Surface]:
+        """Retorna uma imagem de item/brinquedo canino do DogItems.png."""
+        if not os.path.exists(self.dog_items_path):
+            return None
+        if self.dog_items_path not in self.raw_sheets:
+            try:
+                self.raw_sheets[self.dog_items_path] = pygame.image.load(self.dog_items_path).convert_alpha()
+            except Exception:
+                return None
+
+        sheet = self.raw_sheets[self.dog_items_path]
+        col, row = self.DOG_ITEM_CELLS.get(item_name, (0, 0))
+        rect = pygame.Rect(col * 32, row * 32, 32, 32)
+        try:
+            sub = sheet.subsurface(rect)
+            if scale != (32, 32):
+                return pygame.transform.scale(sub, scale)
+            return sub
+        except Exception:
+            return None
 
     def draw_shadow(
         self,
