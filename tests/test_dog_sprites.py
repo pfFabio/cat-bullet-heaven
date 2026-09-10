@@ -87,10 +87,8 @@ class TestDogSpritesAndEnemies(unittest.TestCase):
         scene.active_boss = None
         scene.time_survived = 150.0
         scene.player_level = 12
-        scene.spawn_timer = 2.0
-        scene.enemies.clear()
-
         for _ in range(50):
+            scene.spawn_timer = 2.0
             scene._spawn_wave(0.016)
 
         enemy_types_present = {e.enemy_type for e in scene.enemies}

@@ -37,30 +37,129 @@ class AssetManager:
         "beg": (24, 4),
     }
 
-    # Configuração dos cães do Dog Mega Pack: (linha_y, lista_de_indices_de_frames)
-    DOG_ROW_CONFIG = {
-        # Linha 0 (Cão Galgo / Husky): 7 frames de corrida fluida
-        "fast": (0, [0, 1, 2, 3, 4, 5, 6]),
-        "dog_husky": (0, [0, 1, 2, 3, 4, 5, 6]),
-        "dog_greyhound": (0, [0, 1, 2, 3, 4, 5, 6]),
+    # Mapeamento do pacote dedicado "Pet Dogs Pack" para cada raça e seu spritesheet de corrida (-run.png)
+    PET_DOG_MAPPING = {
+        # Rápido: Siberian Husky (alta agilidade e velocidade de corrida)
+        "fast": ("Dog-6-Siberian-Husky", "Siberian-Husky-run.png"),
+        "dog_husky": ("Dog-6-Siberian-Husky", "Siberian-Husky-run.png"),
+        "dog_greyhound": ("Dog-6-Siberian-Husky", "Siberian-Husky-run.png"),
 
-        # Linha 1 (Golden Retriever): Matriarca que anda, late e convoca filhotes
-        "slime_mother": (1, [2, 3, 4, 5, 6, 3]),
-        "dog_mother": (1, [2, 3, 4, 5, 6, 3]),
-        "dog_golden": (1, [2, 3, 4, 5, 6, 3]),
-        "dog_retriever": (1, [2, 3, 4, 5, 6, 3]),
+        # Matriarca Canina: Golden Retriever (pelagem dourada e corrida expressiva)
+        "slime_mother": ("Dog-1-Golden-Retriever", "Golden-Retriever-run.png"),
+        "dog_mother": ("Dog-1-Golden-Retriever", "Golden-Retriever-run.png"),
+        "dog_golden": ("Dog-1-Golden-Retriever", "Golden-Retriever-run.png"),
+        "dog_retriever": ("Dog-1-Golden-Retriever", "Golden-Retriever-run.png"),
 
-        # Linha 2 (Rottweiler / Mastiff): 6 frames de caminhada pesada de guarda
-        "tank": (2, [0, 1, 2, 3, 4, 5]),
-        "dog_rottweiler": (2, [0, 1, 2, 3, 4, 5]),
-        "dog_mastiff": (2, [0, 1, 2, 3, 4, 5]),
+        # Tanque: Dogue Alemão / Great Dane (enorme porte físico e corrida imponente)
+        "tank": ("Dog-3-Great-Dane", "Great-Dane-run.png"),
+        "dog_rottweiler": ("Dog-3-Great-Dane", "Great-Dane-run.png"),
+        "dog_mastiff": ("Dog-3-Great-Dane", "Great-Dane-run.png"),
+        "dog_great_dane": ("Dog-3-Great-Dane", "Great-Dane-run.png"),
 
-        # Linha 3 (Filhotes e Rastreadores): 6 frames de trote ágil
-        "slime": (3, [0, 1, 2, 3, 4, 5]),
-        "dog_pup": (3, [0, 1, 2, 3, 4, 5]),
-        "dog_small": (3, [0, 1, 2, 3, 4, 5]),
-        "dog_hound": (3, [0, 1, 2, 3, 4, 5]),
-        "dog_shepherd": (3, [0, 1, 2, 3, 4, 5]),
+        # Filhotes: Schnauzer (pequenos, brincalhões e ágeis)
+        "slime": ("Dog-4-Schnauzer", "Schnauzer-run.png"),
+        "dog_pup": ("Dog-4-Schnauzer", "Schnauzer-run.png"),
+        "dog_small": ("Dog-4-Schnauzer", "Schnauzer-run.png"),
+
+        # Rastreadores / Pastores: Akita
+        "dog_hound": ("Dog-2-Akita", "Akita-run.png"),
+        "dog_shepherd": ("Dog-2-Akita", "Akita-run.png"),
+        "dog_akita": ("Dog-2-Akita", "Akita-run.png"),
+
+        # Tanque Montanhês Especial: São Bernardo
+        "dog_saint_bernard": ("Dog-5-Saint-Bernard", "Saint-Bernard-run.png"),
+    }
+
+    # Lista de tipos identificados como cães que usam o ciclo dinâmico de corrida (Row 0)
+    DOG_RUN_TYPES = {
+        "fast", "dog_husky", "dog_greyhound",
+        "slime_mother", "dog_mother", "dog_golden", "dog_retriever",
+        "tank", "dog_rottweiler", "dog_mastiff",
+        "slime", "dog_pup", "dog_small",
+        "dog_hound", "dog_shepherd",
+    }
+
+    # Paletas de cores para diferenciar as raças de cães sobre o ciclo completo de corrida de 7 frames
+    DOG_PALETTES = {
+        # Golden Retriever: Pelagem dourada, mel, caramelo e creme
+        "slime_mother": {
+            (122, 120, 113): (190, 135, 55),
+            (163, 161, 156): (225, 175, 95),
+            (209, 209, 209): (248, 220, 145),
+            (33, 33, 33): (130, 85, 30),
+        },
+        "dog_mother": {
+            (122, 120, 113): (190, 135, 55),
+            (163, 161, 156): (225, 175, 95),
+            (209, 209, 209): (248, 220, 145),
+            (33, 33, 33): (130, 85, 30),
+        },
+        "dog_golden": {
+            (122, 120, 113): (190, 135, 55),
+            (163, 161, 156): (225, 175, 95),
+            (209, 209, 209): (248, 220, 145),
+            (33, 33, 33): (130, 85, 30),
+        },
+        "dog_retriever": {
+            (122, 120, 113): (190, 135, 55),
+            (163, 161, 156): (225, 175, 95),
+            (209, 209, 209): (248, 220, 145),
+            (33, 33, 33): (130, 85, 30),
+        },
+
+        # Rottweiler / Mastiff: Pelagem preta/carvão com marcas castanhas clássicas
+        "tank": {
+            (122, 120, 113): (42, 42, 48),
+            (163, 161, 156): (68, 68, 76),
+            (209, 209, 209): (185, 115, 48),
+            (33, 33, 33): (22, 22, 26),
+        },
+        "dog_rottweiler": {
+            (122, 120, 113): (42, 42, 48),
+            (163, 161, 156): (68, 68, 76),
+            (209, 209, 209): (185, 115, 48),
+            (33, 33, 33): (22, 22, 26),
+        },
+        "dog_mastiff": {
+            (122, 120, 113): (42, 42, 48),
+            (163, 161, 156): (68, 68, 76),
+            (209, 209, 209): (185, 115, 48),
+            (33, 33, 33): (22, 22, 26),
+        },
+
+        # Filhotes / Pups: Pelagem caramelo clara e expressiva
+        "slime": {
+            (122, 120, 113): (210, 155, 75),
+            (163, 161, 156): (240, 195, 120),
+            (209, 209, 209): (255, 235, 175),
+            (33, 33, 33): (145, 95, 40),
+        },
+        "dog_pup": {
+            (122, 120, 113): (210, 155, 75),
+            (163, 161, 156): (240, 195, 120),
+            (209, 209, 209): (255, 235, 175),
+            (33, 33, 33): (145, 95, 40),
+        },
+        "dog_small": {
+            (122, 120, 113): (210, 155, 75),
+            (163, 161, 156): (240, 195, 120),
+            (209, 209, 209): (255, 235, 175),
+            (33, 33, 33): (145, 95, 40),
+        },
+
+        # Pastor / Hound: Pelagem castanha com tons terrosos
+        "dog_hound": {
+            (122, 120, 113): (142, 96, 48),
+            (163, 161, 156): (188, 136, 78),
+            (209, 209, 209): (225, 188, 135),
+            (33, 33, 33): (55, 42, 36),
+        },
+        "dog_shepherd": {
+            (122, 120, 113): (142, 96, 48),
+            (163, 161, 156): (188, 136, 78),
+            (209, 209, 209): (225, 188, 135),
+            (33, 33, 33): (55, 42, 36),
+        },
     }
 
     # Itens colecionáveis e brinquedos caninos em DogItems.png (coluna, linha) de 32x32
@@ -96,7 +195,9 @@ class AssetManager:
             "Minifantasy_Creatures_Assets"
         )
 
-        # Assets de Cães (DogMegaPackFree)
+        # Assets de Cães (Pet Dogs Pack e DogMegaPackFree)
+        self.pet_dogs_dir = os.path.join(base_dir, "Pet Dogs Pack")
+
         self.dogs_sheet_path = os.path.join(base_dir, "DogMegaPackFree", "DogMegaPackFree", "Dogs.png")
         if not os.path.exists(self.dogs_sheet_path):
             self.dogs_sheet_path = os.path.join(base_dir, "DogMegaPackFree", "Dogs.png")
@@ -260,8 +361,37 @@ class AssetManager:
         if cache_key in self.enemy_cache:
             return self.enemy_cache[cache_key]
 
-        # 1. Checa se é um cão do Dog Mega Pack (Dogs.png)
-        if enemy_type in self.DOG_ROW_CONFIG:
+        # 1. Cães do Pet Dogs Pack com ANIMAÇÃO DEDICADA DE CORRIDA / MOVIMENTO (8 frames)
+        if enemy_type in self.PET_DOG_MAPPING and os.path.exists(self.pet_dogs_dir):
+            folder, fname = self.PET_DOG_MAPPING[enemy_type]
+            dog_run_path = os.path.join(self.pet_dogs_dir, folder, fname)
+            if os.path.exists(dog_run_path):
+                if dog_run_path not in self.raw_sheets:
+                    try:
+                        self.raw_sheets[dog_run_path] = pygame.image.load(dog_run_path).convert_alpha()
+                    except Exception:
+                        pass
+                if dog_run_path in self.raw_sheets:
+                    sheet = self.raw_sheets[dog_run_path]
+                    frames: List[pygame.Surface] = []
+                    # 8 quadros de 100x100 com o cão centrado em (20, 25, 60, 50)
+                    for c in range(8):
+                        rect = pygame.Rect(c * 100 + 20, 25, 60, 50)
+                        try:
+                            sub = sheet.subsurface(rect)
+                            if scale != (60, 50):
+                                scaled = pygame.transform.scale(sub, scale)
+                            else:
+                                scaled = sub
+                            frames.append(scaled)
+                        except Exception:
+                            continue
+                    if frames:
+                        self.enemy_cache[cache_key] = frames
+                        return frames
+
+        # 2. Fallback para Dog Mega Pack (Dogs.png) com 7 frames de corrida
+        if enemy_type in self.DOG_RUN_TYPES:
             if not os.path.exists(self.dogs_sheet_path):
                 return []
             if self.dogs_sheet_path not in self.raw_sheets:
@@ -271,13 +401,24 @@ class AssetManager:
                     return []
 
             sheet = self.raw_sheets[self.dogs_sheet_path]
-            row_idx, col_indices = self.DOG_ROW_CONFIG[enemy_type]
             frames: List[pygame.Surface] = []
             cell_w, cell_h = 64, 64
-            for c in col_indices:
-                rect = pygame.Rect(c * cell_w, row_idx * cell_h, cell_w, cell_h)
+            palette_map = self.DOG_PALETTES.get(enemy_type, None)
+
+            for c in range(7):
+                rect = pygame.Rect(c * cell_w, 0, cell_w, cell_h)
                 try:
-                    sub = sheet.subsurface(rect)
+                    sub = sheet.subsurface(rect).copy()
+                    if palette_map:
+                        w, h = sub.get_size()
+                        for px in range(w):
+                            for py in range(h):
+                                col = sub.get_at((px, py))
+                                rgb = (col[0], col[1], col[2])
+                                if col[3] > 0 and rgb in palette_map:
+                                    n_rgb = palette_map[rgb]
+                                    sub.set_at((px, py), (n_rgb[0], n_rgb[1], n_rgb[2], col[3]))
+
                     if scale != (cell_w, cell_h):
                         scaled = pygame.transform.scale(sub, scale)
                     else:
@@ -303,14 +444,14 @@ class AssetManager:
             else:
                 img_path = os.path.join(self.minifantasy_dir, "Monsters", "Cyclop", "CyclopWalk.png")
         elif enemy_type in ("warg", "beast_warg"):
-            # Warg Selvagem das Feras (antigo mantido)
-            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Warg", "WargWalk.png")
+            # Warg Selvagem das Feras com animação de investida/salto ativo
+            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Warg", "WargJump.png")
             if not os.path.exists(img_path or ""):
-                img_path = os.path.join(self.minifantasy_dir, "Beasts", "Warg", "WargJump.png")
-        else:  # basic ou wolf (Lobo antigo mantido)
-            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfWalk.png")
+                img_path = os.path.join(self.minifantasy_dir, "Beasts", "Warg", "WargWalk.png")
+        else:  # basic ou wolf (Lobo com animação de corrida/salto ativo)
+            img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfJump.png")
             if not os.path.exists(img_path or ""):
-                img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfJump.png")
+                img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfWalk.png")
 
         if not img_path or not os.path.exists(img_path):
             return []

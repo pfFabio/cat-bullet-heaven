@@ -4,7 +4,7 @@
     "sfx_volume": 0.9,
     "fullscreen": false,
     "vsync": true,
-    "screen_shake": true,
+    "screen_shake": false,
     "show_fps": true,
     "resolution": [
         1280,

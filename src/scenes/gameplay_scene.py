@@ -303,7 +303,7 @@ class Enemy:
 
         frames = asset_mgr.get_enemy_frames(self.enemy_type, action="walk", scale=self.sprite_scale)
         if frames:
-            fps = 8.0 if self.enemy_type != "fast" else 12.0
+            fps = max(9.0, min(16.0, self.speed * 0.08))
             frame_idx = int(self.anim_time * fps) % len(frames)
             frame = frames[frame_idx]
             if self.facing_left:
