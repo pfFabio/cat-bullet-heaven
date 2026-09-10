@@ -471,10 +471,10 @@ class UpgradeCard:
         )
 
         # Ícone de Cubo Estilizado
-        cube_size = 42
+        cube_size = 40
         cube_rect = pygame.Rect(
             draw_rect.centerx - cube_size // 2,
-            draw_rect.y + 35,
+            draw_rect.y + 26,
             cube_size,
             cube_size
         )
@@ -484,8 +484,8 @@ class UpgradeCard:
         asset_mgr.render_text(
             surface,
             self.title,
-            (draw_rect.centerx, draw_rect.y + 98),
-            size=21,
+            (draw_rect.centerx, draw_rect.y + 76),
+            size=20,
             color=COLOR_TEXT_LIGHT,
             bold=True,
             align="center",
@@ -496,44 +496,48 @@ class UpgradeCard:
         pygame.draw.line(
             surface,
             (60, 52, 90),
-            (draw_rect.x + 20, draw_rect.y + 124),
-            (draw_rect.right - 20, draw_rect.y + 124),
+            (draw_rect.x + 18, draw_rect.y + 102),
+            (draw_rect.right - 18, draw_rect.y + 102),
             width=1
         )
 
-        # Descrição da Melhoria (com quebra de linha se necessário)
-        desc_lines = self.description.split("\n")
-        start_desc_y = draw_rect.y + 140
+        # Descrição da Melhoria (com quebra de linha limpa sem linhas vazias)
+        desc_lines = [line.strip() for line in self.description.split("\n") if line.strip()]
+        start_desc_y = draw_rect.y + 114
         for i, line in enumerate(desc_lines):
             asset_mgr.render_text(
                 surface,
                 line,
                 (draw_rect.centerx, start_desc_y + i * 22),
-                size=17,
+                size=16,
                 color=COLOR_GOLD,
                 bold=True,
                 align="center"
             )
 
-        # Status Atual / Preview
+        # Status Atual / Preview em mini-painel
+        preview_box = pygame.Rect(draw_rect.x + 20, draw_rect.y + 195, draw_rect.width - 40, 28)
+        pygame.draw.rect(surface, (20, 16, 32), preview_box, border_radius=6)
+        pygame.draw.rect(surface, (50, 42, 70), preview_box, width=1, border_radius=6)
         asset_mgr.render_text(
             surface,
             self.stat_preview,
-            (draw_rect.centerx, draw_rect.y + 215),
-            size=16,
+            (preview_box.centerx, preview_box.centery),
+            size=14,
             color=COLOR_CYAN,
+            bold=True,
             align="center"
         )
 
         # Botão de Escolha no rodapé do Card
-        btn_box = pygame.Rect(draw_rect.x + 20, draw_rect.bottom - 45, draw_rect.width - 40, 32)
+        btn_box = pygame.Rect(draw_rect.x + 20, draw_rect.bottom - 46, draw_rect.width - 40, 32)
         btn_bg = self.accent_color if self.is_hovered else (45, 40, 65)
         pygame.draw.rect(surface, btn_bg, btn_box, border_radius=6)
         asset_mgr.render_text(
             surface,
             "ESCOLHER" if not self.is_hovered else "SELECIONAR",
             (btn_box.centerx, btn_box.centery),
-            size=16,
+            size=15,
             color=COLOR_BG_DARK if self.is_hovered else COLOR_TEXT_LIGHT,
             bold=True,
             align="center",

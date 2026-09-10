@@ -70,6 +70,30 @@ POWER_DEFINITIONS: Dict[str, Dict[str, any]] = {
         "color": (0, 235, 235),
         "cooldown": 4.0,
     },
+    "ghost": {
+        "name": "Toque Espectral",
+        "icon": "👻",
+        "desc": "Não atira. Recebe apenas 10% de dano. Causa dano corpo-a-corpo aos monstros proporcional à vida perdida.",
+        "type": "passive",
+        "color": (192, 132, 252),
+        "cooldown": 0.0,
+    },
+    "brawler": {
+        "name": "Colosso Pesado",
+        "icon": "🛡️",
+        "desc": "Tem o dobro de HP (200) e causa o dobro de dano corpo-a-corpo, mas seus tiros causam metade do dano.",
+        "type": "passive",
+        "color": (251, 146, 60),
+        "cooldown": 0.0,
+    },
+    "radioactive_aura": {
+        "name": "Aura Gama Nuclear",
+        "icon": "☢️",
+        "desc": "Não atira projéteis. Emite uma aura radioativa constante que queima e desintegra inimigos ao seu redor!",
+        "type": "passive",
+        "color": (74, 222, 128),
+        "cooldown": 0.0,
+    },
 }
 
 
@@ -165,10 +189,10 @@ CAT_SKINS: Dict[str, CatSkin] = {
         category="basic",
         description="Furtivo como uma pequena pantera das florestas.",
         rarity_color=COLOR_RARITY_UNCOMMON,
-        power_id="teleport",
-        power_name="Teleporte Sombra",
-        power_desc="Pressione [ESPAÇO/SHIFT] para saltar pelo espaço na direção que estiver olhando.",
-        power_icon="⚡"
+        power_id="brawler",
+        power_name="Colosso Pesado",
+        power_desc="Tem o dobro de HP (200) e causa o dobro de dano corpo-a-corpo, mas metade com tiros.",
+        power_icon="🛡️"
     ),
     "black_3": CatSkin(
         id="black_3",
@@ -309,12 +333,12 @@ CAT_SKINS: Dict[str, CatSkin] = {
         rarity="Incomum",
         cost=120,
         category="basic",
-        description="Tons metálicos que combinam com projéteis velozes.",
+        description="Tons metálicos e armadura robusta para aguentar qualquer impacto.",
         rarity_color=COLOR_RARITY_UNCOMMON,
-        power_id="teleport",
-        power_name="Teleporte Sombra",
-        power_desc="Pressione [ESPAÇO/SHIFT] para saltar pelo espaço na direção que estiver olhando.",
-        power_icon="⚡"
+        power_id="brawler",
+        power_name="Colosso Pesado",
+        power_desc="Tem o dobro de HP (200) e causa o dobro de dano corpo-a-corpo, mas metade com tiros.",
+        power_icon="🛡️"
     ),
     "grey_2": CatSkin(
         id="grey_2",
@@ -375,12 +399,12 @@ CAT_SKINS: Dict[str, CatSkin] = {
         rarity="Incomum",
         cost=120,
         category="basic",
-        description="Firme como as raízes dos carvalhos ancestrais.",
+        description="Firme e resistente como as raízes dos carvalhos ancestrais.",
         rarity_color=COLOR_RARITY_UNCOMMON,
-        power_id="mega_beam",
-        power_name="Tiro Perfurante Gigante",
-        power_desc="Ativa [ESPAÇO/SHIFT] um feixe colossal que perfura todos os monstros.",
-        power_icon="☄️"
+        power_id="brawler",
+        power_name="Colosso Pesado",
+        power_desc="Tem o dobro de HP (200) e causa o dobro de dano corpo-a-corpo, mas metade com tiros.",
+        power_icon="🛡️"
     ),
     "brown_4": CatSkin(
         id="brown_4",
@@ -440,12 +464,12 @@ CAT_SKINS: Dict[str, CatSkin] = {
         rarity="Incomum",
         cost=170,
         category="basic",
-        description="Tom marrom escuro com energia pura e revigorante.",
+        description="Tom marrom escuro encorpado com alta resistência física.",
         rarity_color=COLOR_RARITY_UNCOMMON,
-        power_id="mega_beam",
-        power_name="Tiro Perfurante Gigante",
-        power_desc="Ativa [ESPAÇO/SHIFT] um feixe colossal que perfura todos os monstros.",
-        power_icon="☄️"
+        power_id="brawler",
+        power_name="Colosso Pesado",
+        power_desc="Tem o dobro de HP (200) e causa o dobro de dano corpo-a-corpo, mas metade com tiros.",
+        power_icon="🛡️"
     ),
 
     # --- Coloridos Vibrantes ---
@@ -654,12 +678,12 @@ CAT_SKINS: Dict[str, CatSkin] = {
         rarity="Épico",
         cost=550,
         category="mythic",
-        description="Forjado na escuridão estelar para absorver todo o perigo.",
+        description="Forjado na escuridão estelar para absorver todo o perigo com corpo colossal.",
         rarity_color=COLOR_RARITY_EPIC,
-        power_id="teleport",
-        power_name="Teleporte Sombra",
-        power_desc="Pressione [ESPAÇO/SHIFT] para saltar pelo espaço na direção que estiver olhando.",
-        power_icon="⚡"
+        power_id="brawler",
+        power_name="Colosso Pesado",
+        power_desc="Tem o dobro de HP (200) e causa o dobro de dano corpo-a-corpo, mas metade com tiros.",
+        power_icon="🛡️"
     ),
     "game_boy_0": CatSkin(
         id="game_boy_0",
@@ -706,12 +730,12 @@ CAT_SKINS: Dict[str, CatSkin] = {
         rarity="Lendário",
         cost=850,
         category="mythic",
-        description="Transita entre os mundos, assustando os próprios monstros.",
+        description="Transita entre os mundos, assustando os próprios monstros com toque vingativo.",
         rarity_color=COLOR_RARITY_LEGENDARY,
-        power_id="mega_beam",
-        power_name="Tiro Perfurante Gigante",
-        power_desc="Ativa [ESPAÇO/SHIFT] um feixe colossal que perfura todos os monstros.",
-        power_icon="☄️"
+        power_id="ghost",
+        power_name="Toque Espectral",
+        power_desc="Não atira. Recebe apenas 10% de dano. Dano corpo-a-corpo escala com a vida perdida!",
+        power_icon="👻"
     ),
     "radioactive_0": CatSkin(
         id="radioactive_0",
@@ -721,10 +745,10 @@ CAT_SKINS: Dict[str, CatSkin] = {
         category="mythic",
         description="Energia nuclear cintilante que brilha na escuridão total.",
         rarity_color=COLOR_RARITY_LEGENDARY,
-        power_id="mega_beam",
-        power_name="Tiro Perfurante Gigante",
-        power_desc="Ativa [ESPAÇO/SHIFT] um feixe colossal que perfura todos os monstros.",
-        power_icon="☄️"
+        power_id="radioactive_aura",
+        power_name="Aura Gama Nuclear",
+        power_desc="Não atira projéteis. Emite uma aura radioativa constante que desintegra inimigos ao seu redor!",
+        power_icon="☢️"
     ),
     "gold_0": CatSkin(
         id="gold_0",

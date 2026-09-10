@@ -49,9 +49,14 @@ COLOR_PLAYER_GLOW = (0, 140, 255)
 COLOR_ENEMY_BASIC = (239, 68, 68)       # Cubo Inimigo Vermelho
 COLOR_ENEMY_FAST = (249, 115, 22)       # Cubo Inimigo Laranja
 COLOR_ENEMY_TANK = (168, 85, 247)       # Cubo Inimigo Roxo
+COLOR_ENEMY_SLIME = (74, 222, 128)      # Cubo Inimigo Slime Verde
+COLOR_ENEMY_BOSS = (220, 38, 38)        # Cubo Chefe Carmesim
 COLOR_PROJECTILE = (254, 240, 138)      # Projétil Amarelo
+COLOR_BOSS_PROJECTILE = (239, 68, 68)   # Projétil Vermelho de Chefe
 COLOR_XP_GEM = (56, 189, 248)           # Gema XP Ciano
 COLOR_GOLD_COIN = (250, 204, 21)        # Moeda de Ouro
+COLOR_CHEST = (251, 191, 36)            # Baú Lendário de Chefe
+COLOR_WARNING = (251, 146, 60)          # Alerta de Chefe
 
 # Cores de Raridade de Skins / Colecionáveis
 COLOR_RARITY_COMMON = (148, 163, 184)      # Cinza Claro

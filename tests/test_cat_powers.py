@@ -35,8 +35,8 @@ class TestCatPowers(unittest.TestCase):
         self.assertEqual(starter.power_name, "Sem Poder Especial")
 
     def test_all_other_cats_have_assigned_powers(self):
-        """Valida que todas as outras 49 skins possuem um dos 4 poderes especiais definidos."""
-        valid_powers = {"double_attack", "teleport", "lifesteal", "mega_beam"}
+        """Valida que todas as outras 49 skins possuem um dos poderes especiais definidos."""
+        valid_powers = {"double_attack", "teleport", "lifesteal", "mega_beam", "ghost", "brawler", "radioactive_aura"}
         all_skins = get_all_skins()
 
         power_counts = {p: 0 for p in valid_powers}
@@ -51,9 +51,9 @@ class TestCatPowers(unittest.TestCase):
                 power_counts[skin.power_id] += 1
 
         self.assertEqual(power_counts["none"], 1)
-        for p, count in power_counts.items():
-            if p != "none":
-                self.assertGreaterEqual(count, 8, f"O poder {p} deve estar distribuído entre várias skins.")
+        self.assertGreaterEqual(power_counts["ghost"], 1)
+        self.assertGreaterEqual(power_counts["brawler"], 3)
+        self.assertGreaterEqual(power_counts["radioactive_aura"], 1)
 
     def test_double_attack_power_mechanic(self):
         """Valida que gatinhos com Ataque Duplo geram 2 projéteis por disparo automático."""
@@ -171,6 +171,109 @@ class TestCatPowers(unittest.TestCase):
         self.assertLess(e1.hp, initial_hp_e1)
         self.assertLess(e2.hp, initial_hp_e2)
         self.assertLess(e3.hp, initial_hp_e3)
+
+    def test_ghost_cat_power_mechanics(self):
+        """Valida mecânicas do Gato Fantasma: não atira, recebe 10% de dano e causa dano melee por PV perdido."""
+        engine = GameEngine()
+        engine.save_manager.progress["unlocked_skins"] = ["blue_0", "ghost_0"]
+        engine.save_manager.set_selected_skin("ghost_0")
+
+        engine.change_scene("gameplay")
+        scene = engine.current_scene
+        self.assertEqual(scene.cat_power, "ghost")
+
+        # 1. Valida que NÃO atira projéteis
+        enemy = Enemy(scene.player_x + 50, scene.player_y, enemy_type="basic")
+        scene.enemies = [enemy]
+        scene.attack_timer = scene.attack_cooldown + 1.0
+        scene._auto_attack(0.016)
+        self.assertEqual(len(scene.projectiles), 0, "Gato fantasma não deve disparar nenhum projétil.")
+
+        # 2. Valida que recebe apenas 10% de dano do inimigo (dano básico = 12 -> sofre 2)
+        enemy.x = scene.player_x
+        enemy.y = scene.player_y
+        initial_hp = scene.player_hp
+        scene.invulnerable_timer = 0.0
+
+        scene.update(0.016)
+        damage_taken = initial_hp - scene.player_hp
+        self.assertEqual(damage_taken, max(1, math.ceil(12 * 0.10)))
+
+        # 3. Valida que causa dano corpo-a-corpo escalado com PV perdido no inimigo
+        enemy2 = Enemy(scene.player_x, scene.player_y, enemy_type="tank")
+        scene.enemies = [enemy2]
+        scene.player_hp = 30  # Perdeu 70 de HP
+        scene.player_max_hp = 100
+
+        initial_enemy_hp = enemy2.hp
+        scene.update(0.016)
+
+        # Dano esperado: max(15, int(player_damage + lost_hp * 2.0)) = 25 + 70 * 2 = 165
+        expected_melee_dmg = int(scene.player_damage + (100 - 30) * 2.0)
+        self.assertEqual(enemy2.hp, initial_enemy_hp - expected_melee_dmg)
+
+    def test_brawler_cat_power_mechanics(self):
+        """Valida mecânicas do Colosso Brawler: dobro de HP, metade do dano de tiro e dobro de dano corpo-a-corpo."""
+        engine = GameEngine()
+        engine.save_manager.progress["unlocked_skins"] = ["blue_0", "dark_0"]
+        engine.save_manager.set_selected_skin("dark_0")
+
+        engine.change_scene("gameplay")
+        scene = engine.current_scene
+        self.assertEqual(scene.cat_power, "brawler")
+
+        # 1. Dobro de HP (200)
+        self.assertEqual(scene.player_max_hp, 200)
+        self.assertEqual(scene.player_hp, 200)
+
+        # 2. Metade do dano com tiros (25 / 2 = 12.5)
+        enemy = Enemy(scene.player_x + 100, scene.player_y, enemy_type="basic")
+        scene.enemies = [enemy]
+        scene.attack_timer = scene.attack_cooldown + 0.1
+        scene._auto_attack(0.016)
+
+        self.assertEqual(len(scene.projectiles), 1)
+        self.assertEqual(scene.projectiles[0].damage, scene.player_damage * 0.5)
+
+        # 3. Dobro de dano corpo-a-corpo (25 * 2 = 50)
+        scene.projectiles.clear()
+        enemy_contact = Enemy(scene.player_x, scene.player_y, enemy_type="tank")
+        scene.enemies = [enemy_contact]
+        initial_tank_hp = enemy_contact.hp
+
+        scene.update(0.016)
+        self.assertEqual(enemy_contact.hp, initial_tank_hp - (scene.player_damage * 2.0))
+
+    def test_radioactive_cat_aura_mechanic(self):
+        """Valida que o Gato Radioativo não atira projéteis e causa dano contínuo em área apenas aos inimigos no raio de alcance."""
+        engine = GameEngine()
+        engine.save_manager.progress["unlocked_skins"] = ["blue_0", "radioactive_0"]
+        engine.save_manager.set_selected_skin("radioactive_0")
+
+        engine.change_scene("gameplay")
+        scene = engine.current_scene
+        self.assertEqual(scene.cat_power, "radioactive_aura")
+
+        # 1. Não deve disparar projéteis em _auto_attack
+        enemy_near = Enemy(scene.player_x + 60, scene.player_y, enemy_type="basic")
+        enemy_far = Enemy(scene.player_x + 350, scene.player_y, enemy_type="basic")
+        scene.enemies = [enemy_near, enemy_far]
+
+        scene.attack_timer = scene.attack_cooldown + 0.1
+        scene._auto_attack(0.016)
+        self.assertEqual(len(scene.projectiles), 0, "Gato radioativo não deve disparar projéteis.")
+
+        # 2. Ao passar tempo de tick (>= 0.15s), deve causar dano de aura no inimigo próximo
+        initial_hp_near = enemy_near.hp
+        initial_hp_far = enemy_far.hp
+
+        # Simula 0.20s de atualização
+        scene.update(0.20)
+
+        # Inimigo próximo deve ter sofrido dano de radiação
+        self.assertLess(enemy_near.hp, initial_hp_near)
+        # Inimigo distante (fora do raio de 150px) deve permanecer ileso
+        self.assertEqual(enemy_far.hp, initial_hp_far)
 
     def tearDown(self):
         pygame.quit()

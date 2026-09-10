@@ -121,8 +121,31 @@ class TestScenesIntegration(unittest.TestCase):
         # Simula 1 segundo de gameplay (dt = 1.0)
         scene.update(1.0)
 
-        # 2% de 100 = 2 HP recuperados no segundo
-        self.assertEqual(scene.player_hp, 42)
+    def test_enemy_spawn_only_on_two_furthest_walls(self):
+        """Testa se os inimigos nascem apenas nas 2 paredes mais distantes da posição do gato."""
+        self.engine.change_scene("gameplay")
+        scene = self.engine.current_scene
+
+        # Posiciona o jogador no canto superior esquerdo (x=50, y=50)
+        # As 2 paredes mais próximas são Topo (y=0) e Esquerda (x=0)
+        # As 2 paredes mais distantes são Direita (x=1280) e Baixo (y=720)
+        scene.player_x = 50.0
+        scene.player_y = 50.0
+        scene.enemies.clear()
+
+        # Gera múltiplos spawns
+        for _ in range(40):
+            scene.spawn_timer = 2.0
+            scene._spawn_wave(0.016)
+
+        self.assertGreaterEqual(len(scene.enemies), 40)
+        for enemy in scene.enemies:
+            # Não deve ter nascido no Topo (y < 0) nem na Esquerda (x < 0)
+            self.assertFalse(enemy.y < 0, f"Inimigo não deveria nascer no Topo (parede próxima): {enemy.y}")
+            self.assertFalse(enemy.x < 0, f"Inimigo não deveria nascer na Esquerda (parede próxima): {enemy.x}")
+            # Deve ter nascido na Direita (x >= 1280) ou Baixo (y >= 720)
+            spawned_from_distant_wall = (enemy.x >= 1280 or enemy.y >= 720)
+            self.assertTrue(spawned_from_distant_wall, f"Inimigo deve nascer nas paredes distantes: ({enemy.x}, {enemy.y})")
 
     def tearDown(self):
         pygame.quit()

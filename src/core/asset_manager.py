@@ -206,26 +206,40 @@ class AssetManager:
         scale: Tuple[int, int] = (36, 36)
     ) -> List[pygame.Surface]:
         """
-        Retorna quadros animados para os tipos de inimigos baseados no pacote Minifantasy Creatures.
+        Retorna quadros animados para os tipos de inimigos e chefes baseados no pacote Minifantasy Creatures.
         """
         cache_key = (enemy_type, action, scale)
         if cache_key in self.enemy_cache:
             return self.enemy_cache[cache_key]
 
         img_path = None
-        frame_count = 4
-        if enemy_type == "fast":
+        if enemy_type == "boss_minotaur":
+            if action == "attack":
+                img_path = os.path.join(self.minifantasy_dir, "Monsters", "Minotaur", "MinotaurAttack.png")
+            else:
+                img_path = os.path.join(self.minifantasy_dir, "Monsters", "Minotaur", "MinotaurWalk.png")
+        elif enemy_type == "boss_cyclop":
+            if action == "attack":
+                img_path = os.path.join(self.minifantasy_dir, "Monsters", "Cyclop", "CyclopAttack.png")
+            else:
+                img_path = os.path.join(self.minifantasy_dir, "Monsters", "Cyclop", "CyclopWalk.png")
+        elif enemy_type == "slime_mother":
+            img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Mother_Slime", "MotherSlimeGreenJumpAttack.png")
+            if not os.path.exists(img_path or ""):
+                img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Mother_Slime", "MotherSlimeGreenIdle.png")
+        elif enemy_type == "slime":
+            img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Slime", "SlimeGreenJumpAttack.png")
+            if not os.path.exists(img_path or ""):
+                img_path = os.path.join(self.minifantasy_dir, "Slimes", "Green_Slime", "SlimeGreenIdle.png")
+        elif enemy_type == "fast":
             # Morcego
             img_path = os.path.join(self.minifantasy_dir, "Beasts", "Bat", "BatFlyIdle.png")
-            frame_count = 2
         elif enemy_type == "tank":
             # Troll
             img_path = os.path.join(self.minifantasy_dir, "Monsters", "Troll", "TrollWalk.png")
-            frame_count = 6
         else:  # basic
-            # Green Slime
+            # Lobo
             img_path = os.path.join(self.minifantasy_dir, "Beasts", "Wolf", "WolfJump.png")
-            frame_count = 4
 
         if not img_path or not os.path.exists(img_path):
             return []
@@ -239,9 +253,11 @@ class AssetManager:
         sheet = self.raw_sheets[img_path]
         frames: List[pygame.Surface] = []
         cell_size = 32
+        frame_count = max(1, sheet.get_width() // cell_size)
+
         # Linha 0 (Front / Facing camera)
         for i in range(frame_count):
-            rect = pygame.Rect(i * cell_size, 0, cell_size, cell_size)
+            rect = pygame.Rect(i * cell_size, 0, cell_size, min(cell_size, sheet.get_height()))
             try:
                 sub = sheet.subsurface(rect)
                 if scale != (cell_size, cell_size):

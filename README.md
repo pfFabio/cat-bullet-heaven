@@ -14,15 +14,24 @@ Protótipo de jogo estilo **Bullet Heaven / Roguelite de Sobrevivência** desenv
 - **🐾 Protagonista Felino Animado**:
   - Animação completa 8-direcional (correr, sentar, olhar em volta e repouso) com sombras suaves dinâmicas.
   - Sistema de fallback automático para cubos geométricos neon em caso de ausência de assets.
-- **🐺 Inimigos com IA e Comportamentos Distintos**:
+- **🐺 Inimigos com IA e Separação Orgânica**:
   - **Lobo (Básico)**: Perseguição equilibrada e resistente.
   - **Morcego (Rápido)**: Deslocamento ágil que força manobras de esquiva.
-  - **Troll (Tanque)**: Alta vitalidade e grande impacto, atuando como mini-boss.
+  - **Slime Mãe (Divisão)**: Divide-se em múltiplos mini-slimes ágeis ao ser derrotada.
+  - **Troll (Tanque)**: Alta vitalidade e grande impacto.
+  - **Separação Suave**: Repulsão mútua entre inimigos evitando empilhamento em um único ponto.
+- **👑 Chefes de Fase Monumentais (Stage Bosses)**:
+  - **Minotauro Furioso** (Aos 2:00 ou Nível 10): Ataques de investida (*Charge Dash*) com aviso visual de linha vermelha e invocação de matilhas de lobos.
+  - **Ciclope Colossal** (Aos 5:00 ou Nível 20): Disparo de anéis de energia circular (*Orb Nova*) e modo enfurecido com aumento de velocidade e agressividade.
+  - **Barra de Vida no Topo & Banner de Alerta**: Alerta visual na tela, *screen shake* e barra de vida dedicada para os chefes.
+  - **Baús Lendários**: Drop exclusivo de chefes com abundância de ouro e subida imediata de nível.
+- **📈 Progressão Dinâmica Contínua (Tempo + Nível)**:
+  - Dificuldade, vida, dano, velocidade e limite de inimigos escalonados em tempo real com base no tempo de sobrevivência e no nível do herói.
 - **⚔️ Combate e Progressão**:
   - Disparo automático com busca por proximidade no raio de visão.
   - Sistema de XP e moedas de ouro dropadas ao derrotar inimigos, com atração magnética.
-  - Modal de **Level Up** que pausa a partida e sorteia 3 entre 4 cartas de melhoria (*Max HP, Dano, Cadência de Disparo, Velocidade de Movimento*).
-  - Feedback visual e sonoro com números de dano flutuantes (*Damage Numbers*) e efeitos procedurais.
+  - Modal de **Level Up** reformulado sem sobreposição de textos, sorteando 3 entre 5 cartas de melhoria (*Max HP, Dano, Cadência de Disparo, Velocidade de Movimento, Regeneração de Vida*).
+  - Feedback visual e sonoro com números de dano flutuantes (*Damage Numbers*), *Screen Shake* e efeitos procedurais.
 - **🎵 Áudio Procedural PCM**:
   - Sintetizador procedural em memória via ondas senoidais para efeitos sonoros (tiro, dano, coleta de gemas, level up e cliques de menu), sem dependência obrigatória de arquivos de áudio externos.
   - Controle de canais e sliders independentes de volume (*Master*, *BGM*, *SFX*).
