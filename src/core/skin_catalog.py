@@ -73,7 +73,7 @@ POWER_DEFINITIONS: Dict[str, Dict[str, any]] = {
     "ghost": {
         "name": "Toque Espectral",
         "icon": "👻",
-        "desc": "Não atira. Recebe apenas 10% de dano. Causa dano corpo-a-corpo aos monstros proporcional à vida perdida.",
+        "desc": "Não atira. Recebe apenas 30% de dano. Causa dano corpo-a-corpo aos monstros proporcional à vida perdida.",
         "type": "passive",
         "color": (192, 132, 252),
         "cooldown": 0.0,

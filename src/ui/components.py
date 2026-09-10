@@ -501,15 +501,17 @@ class UpgradeCard:
             width=1
         )
 
-        # Descrição da Melhoria (com quebra de linha limpa sem linhas vazias)
+        # Descrição da Melhoria (com quebra de linha limpa e centralizada)
         desc_lines = [line.strip() for line in self.description.split("\n") if line.strip()]
-        start_desc_y = draw_rect.y + 114
+        line_height = 24
+        total_desc_h = len(desc_lines) * line_height
+        start_desc_y = draw_rect.y + 102 + (93 - total_desc_h) // 2 + 12
         for i, line in enumerate(desc_lines):
             asset_mgr.render_text(
                 surface,
                 line,
-                (draw_rect.centerx, start_desc_y + i * 22),
-                size=16,
+                (draw_rect.centerx, start_desc_y + i * line_height),
+                size=18,
                 color=COLOR_GOLD,
                 bold=True,
                 align="center"

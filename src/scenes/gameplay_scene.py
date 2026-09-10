@@ -728,7 +728,7 @@ class GameplayScene(BaseScene):
         return {
             "hp": {
                 "title": "Aumentar HP",
-                "desc": "+25 HP Máximo\nCura +25 de Vida",
+                "desc": "+25 HP Máximo",
                 "preview": f"HP Máx: {self.player_max_hp} -> {self.player_max_hp + 25}",
                 "color": COLOR_GREEN,
                 "accent": COLOR_GREEN,
@@ -736,7 +736,7 @@ class GameplayScene(BaseScene):
             },
             "damage": {
                 "title": "Aumentar Dano",
-                "desc": "+10% Dano por Disparo\nMais impacto contra chefes",
+                "desc": "+10% Dano",
                 "preview": f"Dano: {int(self.player_damage)} -> {int(self.player_damage * 1.1)}",
                 "color": COLOR_RED,
                 "accent": COLOR_RED,
@@ -744,7 +744,7 @@ class GameplayScene(BaseScene):
             },
             "attack_speed": {
                 "title": "Velocidade de Ataque",
-                "desc": "-6% Tempo de Recarga\nDisparos mais velozes",
+                "desc": "+6% Vel. Ataque",
                 "preview": f"Recarga: {self.attack_cooldown:.2f}s -> {self.attack_cooldown * 0.94:.2f}s",
                 "color": COLOR_GOLD,
                 "accent": COLOR_GOLD,
@@ -752,7 +752,7 @@ class GameplayScene(BaseScene):
             },
             "move_speed": {
                 "title": "Velocidade de Movimento",
-                "desc": "+30 Velocidade de Corrida\nEsquiva ágil",
+                "desc": "+30 Velocidade",
                 "preview": f"Velocidade: {int(self.player_speed)} -> {int(self.player_speed + 30)}",
                 "color": COLOR_CYAN,
                 "accent": COLOR_CYAN,
@@ -760,7 +760,7 @@ class GameplayScene(BaseScene):
             },
             "hp_regen": {
                 "title": "Recuperação de HP",
-                "desc": "+1% HP Máx / segundo\nRegeneração contínua de vida",
+                "desc": "+1% HP / segundo",
                 "preview": f"Regen: {self.upgrade_counts.get('hp_regen', 0)}%/s -> {self.upgrade_counts.get('hp_regen', 0) + 1}%/s",
                 "color": (34, 197, 94),
                 "accent": (34, 197, 94),
@@ -1223,7 +1223,7 @@ class GameplayScene(BaseScene):
             # Contato Jogador x Inimigo
             if player_rect.colliderect(enemy.rect):
                 if self.invulnerable_timer <= 0:
-                    damage_taken = max(1, math.ceil(enemy.damage * 0.10)) if self.cat_power == "ghost" else enemy.damage
+                    damage_taken = max(1, math.ceil(enemy.damage * 0.30)) if self.cat_power == "ghost" else enemy.damage
                     self.player_hp -= damage_taken
                     self.invulnerable_timer = 0.5
                     self.trigger_screen_shake(7.0, 0.25)
@@ -1319,7 +1319,7 @@ class GameplayScene(BaseScene):
             bp_rect = pygame.Rect(int(bp.x - bp.radius), int(bp.y - bp.radius), bp.radius * 2, bp.radius * 2)
             if player_rect.colliderect(bp_rect):
                 if self.invulnerable_timer <= 0:
-                    damage_taken = max(1, math.ceil(bp.damage * 0.10)) if self.cat_power == "ghost" else bp.damage
+                    damage_taken = max(1, math.ceil(bp.damage * 0.30)) if self.cat_power == "ghost" else bp.damage
                     self.player_hp -= damage_taken
                     self.invulnerable_timer = 0.4
                     self.trigger_screen_shake(8.0, 0.25)

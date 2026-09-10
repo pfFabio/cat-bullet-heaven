@@ -173,7 +173,7 @@ class TestCatPowers(unittest.TestCase):
         self.assertLess(e3.hp, initial_hp_e3)
 
     def test_ghost_cat_power_mechanics(self):
-        """Valida mecânicas do Gato Fantasma: não atira, recebe 10% de dano e causa dano melee por PV perdido."""
+        """Valida mecânicas do Gato Fantasma: não atira, recebe 30% de dano e causa dano melee por PV perdido."""
         engine = GameEngine()
         engine.save_manager.progress["unlocked_skins"] = ["blue_0", "ghost_0"]
         engine.save_manager.set_selected_skin("ghost_0")
@@ -189,7 +189,7 @@ class TestCatPowers(unittest.TestCase):
         scene._auto_attack(0.016)
         self.assertEqual(len(scene.projectiles), 0, "Gato fantasma não deve disparar nenhum projétil.")
 
-        # 2. Valida que recebe apenas 10% de dano do inimigo (dano básico = 12 -> sofre 2)
+        # 2. Valida que recebe apenas 30% de dano do inimigo (dano básico = 14 -> sofre 5)
         enemy.x = scene.player_x
         enemy.y = scene.player_y
         initial_hp = scene.player_hp
@@ -197,7 +197,7 @@ class TestCatPowers(unittest.TestCase):
 
         scene.update(0.016)
         damage_taken = initial_hp - scene.player_hp
-        self.assertEqual(damage_taken, max(1, math.ceil(12 * 0.10)))
+        self.assertEqual(damage_taken, max(1, math.ceil(enemy.damage * 0.30)))
 
         # 3. Valida que causa dano corpo-a-corpo escalado com PV perdido no inimigo
         enemy2 = Enemy(scene.player_x, scene.player_y, enemy_type="tank")
